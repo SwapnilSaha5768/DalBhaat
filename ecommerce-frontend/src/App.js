@@ -12,6 +12,7 @@ import Checkout from './pages/CheckOut/Checkout';
 import FAQ from './pages/faq/FAQ';
 import Contact from './pages/Contact/Contact';
 import PlaceOrder from './components/PlaceOrder';
+import OrderConfirmation from './pages/CheckOut/OrderConfirmation';
 
 
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact/>} />
           <Route path="/place-order" element={<PlaceOrder />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
         </Routes>
       </main>
       <Footer />

@@ -42,18 +42,11 @@ const insertDefaultProducts = async () => {
         console.log('No products found. Inserting default products...');
         const defaultProducts = [
           {
-            name: 'Apple iPhone 14',
-            price: 999.99,
+            name: 'Apple',
+            price: 20.99,
             quantity: 50,
-            description: 'The latest iPhone model with improved features and design.',
-            image: 'https://example.com/images/iphone14.jpg',
-          },
-          {
-            name: 'Apple MacBook Pro 16"',
-            price: 2399.99,
-            quantity: 15,
-            description: 'Powerful laptop for creative professionals with a 16-inch Retina display.',
-            image: 'https://https://cdn.shopify.com/s/files/1/0471/6039/3896/files/air13teaser_480x480.jpg?v=1602593515.com/images/macbook_pro.jpg',
+            description: 'Fresh Quality green apple.',
+            image: 'https://www.buildrestfoods.com/wp-content/uploads/2020/08/green-apply.jpg',
           },
         ];
   

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { placeOrder, clearCart, reduceStock, validateCoupon } from '../../services/api';
+import { placeOrder, reduceStock, validateCoupon } from '../../services/api';
 import './CheckoutPage.css';
 
 function CheckoutPage() {
@@ -98,9 +98,6 @@ function CheckoutPage() {
       await reduceStock(orderData.orderSummary);
 
       alert(response.message);
-
-      // Clear the cart
-      clearCart();
 
       // Redirect to confirmation page
       navigate('/order-confirmation', {

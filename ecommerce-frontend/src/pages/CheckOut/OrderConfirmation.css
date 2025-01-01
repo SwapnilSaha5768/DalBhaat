@@ -1,80 +1,60 @@
-.confirmation-container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-  }
-  
-  .confirmation-container h1 {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  .confirmation-container p {
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 15px;
-  }
-  
-  .receipt {
-    text-align: left;
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .receipt h2 {
-    font-size: 1.5rem;
-    color: #007bff;
-    margin-bottom: 15px;
-  }
-  
-  .receipt p {
-    font-size: 1rem;
-    color: #333;
-    margin-bottom: 10px;
-  }
-  
-  .receipt h3 {
-    font-size: 1.2rem;
-    color: #555;
-    margin-top: 20px;
-    margin-bottom: 10px;
-  }
-  
-  .receipt ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .receipt ul li {
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 5px;
-  }
-  
-  .back-home-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .back-home-btn:hover {
-    background-color: #0056b3;
-  }
-  
+.order-confirmation-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 25px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #ffffff, #f3f4f6);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+.order-summary h3 {
+  margin: 15px 0;
+  font-size: 1.5rem;
+  color: #2a5d84;
+  border-bottom: 2px solid #2a5d84;
+  padding-bottom: 5px;
+}
+
+.order-item {
+  padding: 15px;
+  border-bottom: 1px dashed #bbb;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.items-list {
+  margin-top: 20px;
+  background-color: #e9f0f5;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+p {
+  margin: 8px 0;
+  color: #333;
+  line-height: 1.5;
+}
+
+.back-home-btn {
+  margin-top: 25px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #3ac57e, #34a5d5);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.back-home-btn:hover {
+  background: linear-gradient(135deg, #34a5d5, #3ac57e);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+

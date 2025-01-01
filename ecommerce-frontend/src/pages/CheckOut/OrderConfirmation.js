@@ -1,63 +1,81 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getAllOrders } from '../../services/api';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './OrderConfirmation.css';
 
 function OrderConfirmation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orderId } = useParams();
-  const [orderDetails, setOrderDetails] = useState(location.state?.orderDetails || null);
-
-  useEffect(() => {
-    if (!orderDetails && orderId) {
-      fetchOrderDetails(orderId);
-    }
-  }, [orderDetails, orderId]);
-
-  const fetchOrderDetails = async (id) => {
-    try {
-      const order = await getAllOrders(id); // Use a dedicated `getOrderById` if available
-      setOrderDetails(order);
-    } catch (error) {
-      console.error('Error fetching order details:', error);
-      alert('Failed to load order details. Redirecting to homepage.');
-      navigate('/');
-    }
-  };
+  const orderDetails = location.state?.orderDetails;
 
   if (!orderDetails) {
-    return <div>Loading...</div>;
+    console.error('No order details found! Redirecting to home...');
+    navigate('/');
+    return null;
   }
 
+  const {
+    name,
+    phone,
+    address,
+    deliveryOption,
+    paymentMethod,
+    transactionId,
+    orderSummary,
+    totalAmount,
+    orderId,
+  } = orderDetails;
+
+  const handleDownload = () => {
+    const element = document.createElement('a');
+    const fileContent = `Order Confirmation\n\n` +
+      `Order ID: ${orderId}\n` +
+      `Name: ${name}\n` +
+      `Phone: ${phone}\n` +
+      `Address: ${address}\n` +
+      `Delivery Option: ${deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery'}\n` +
+      `Payment Method: ${paymentMethod === 'bkash' ? 'bKash' : 'Cash on Delivery'}\n` +
+      `${paymentMethod === 'bkash' ? `Transaction ID: ${transactionId}\n` : ''}` +
+      `\nItems Ordered:\n` +
+      orderSummary.map(item => `- ${item.productName}, Quantity: ${item.quantity}`).join('\n') +
+      `\n\nTotal Amount: BDT ${totalAmount.toFixed(2)}\n\n` +
+      `Thank you for your order! Your items will be delivered soon.`;
+    
+    const file = new Blob([fileContent], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Order_Confirmation_${orderId}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
-    <div className="confirmation-container">
-      <h1>Order Confirmation</h1>
-      <p>Thank you for your order!</p>
-      <div className="receipt">
-        <h2>Billing Receipt</h2>
-        <p><strong>Order ID:</strong> {orderDetails._id}</p>
-        <p><strong>Name:</strong> {orderDetails.name}</p>
-        <p><strong>Phone:</strong> {orderDetails.phone}</p>
-        <p><strong>Address:</strong> {orderDetails.address}</p>
-        <p><strong>Delivery Option:</strong> {orderDetails.deliveryOption}</p>
-        <p><strong>Payment Method:</strong> {orderDetails.paymentMethod}</p>
-        {orderDetails.paymentMethod === 'bkash' && (
-          <p><strong>Transaction ID:</strong> {orderDetails.transactionId}</p>
+    <div className="order-confirmation-container">
+      <h2>Order Confirmation</h2>
+      <div className="order-summary">
+        <h3>Order ID: {orderId}</h3>
+        <p><strong>Name:</strong> {name}</p>
+        <p><strong>Phone:</strong> {phone}</p>
+        <p><strong>Address:</strong> {address}</p>
+        <p><strong>Delivery Option:</strong> {deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery'}</p>
+        <p><strong>Payment Method:</strong> {paymentMethod === 'bkash' ? 'bKash' : 'Cash on Delivery'}</p>
+        {paymentMethod === 'bkash' && (
+          <p><strong>Transaction ID:</strong> {transactionId}</p>
         )}
-        <h3>Order Summary</h3>
-        <ul>
-          {orderDetails.orderSummary.map((item, index) => (
-            <li key={index}>
-              {item.productName} - Quantity: {item.quantity}
-            </li>
+        <h3>Items Ordered:</h3>
+        <div className="items-list">
+          {orderSummary.map((item, index) => (
+            <div key={index} className="order-item">
+              <p><strong>Product:</strong> {item.productName}</p>
+              <p><strong>Quantity:</strong> {item.quantity}</p>
+            </div>
           ))}
-        </ul>
-        <p><strong>Total Amount:</strong> BDT {orderDetails.totalAmount.toFixed(2)}</p>
+        </div>
+        <h3>Total Amount: BDT {totalAmount.toFixed(2)}</h3>
+        <p>Thank you for your order! Your items will be delivered soon.</p>
       </div>
-      <button className="back-home-btn" onClick={() => navigate('/')}>
-        Back to Home
-      </button>
+      <button className="back-home-btn" onClick={() => navigate('/')}>Back to Home</button>
+      <br />
+      <button className="back-home-btn" onClick={handleDownload}>Download Order Summary</button>
     </div>
   );
 }
