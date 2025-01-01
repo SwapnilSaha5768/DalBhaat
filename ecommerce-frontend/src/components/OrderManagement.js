@@ -9,6 +9,20 @@ function OrderManagement() {
   const [editingOrder, setEditingOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOrders, setFilteredOrders] = useState([]);
+  const [confirmedOrders, setConfirmedOrders] = useState(new Set());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOrder, setModalOrder] = useState(null);
+  const [estimatedDate, setEstimatedDate] = useState('');
+  const handleCopyToClipboard = () => {
+    const emailContent = document.getElementById('emailContent').innerText; // Get email content
+    navigator.clipboard.writeText(emailContent).then(() => {
+      alert('Email content copied to clipboard!');
+    }).catch(err => {
+      console.error('Error copying text: ', err);
+      alert('Failed to copy email content. Please try again.');
+    });
+  };
+  
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,6 +54,15 @@ function OrderManagement() {
           const orderToEdit = orders.find((order) => order._id === orderId);
           setEditingOrder(orderToEdit);
           break;
+        case 'confirm':
+          setConfirmedOrders((prev) => new Set(prev).add(orderId)); // Add to confirmed orders
+          alert('Order confirmed.');
+          break;
+        case 'place':
+          const orderToPlace = orders.find((order) => order._id === orderId);
+          setModalOrder(orderToPlace); // Set order details to show in modal
+          setIsModalOpen(true); // Open modal
+          break;
         default:
           alert('Invalid action.');
       }
@@ -68,6 +91,10 @@ function OrderManagement() {
         )
       );
     }
+  };
+
+  const handleDateChange = (e) => {
+    setEstimatedDate(e.target.value); // Update selected estimated date
   };
 
   return (
@@ -108,42 +135,61 @@ function OrderManagement() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order._id}</td>
-                  <td>{order.name}</td>
-                  <td>{order.phone}</td>
-                  <td>{order.address}</td>
-                  <td>{order.deliveryOption}</td>
-                  <td>{order.paymentMethod}</td>
-                  <td>{order.transactionId || 'N/A'}</td>
-                  <td>BDT {order.totalAmount.toFixed(2)}</td>
-                  <td>
-                    {order.orderSummary.map((item, index) => (
-                      <div key={index} className="order-item-summary">
-                        {item.productName} (x{item.quantity})
+              {filteredOrders.map((order) => {
+                const isConfirmed = confirmedOrders.has(order._id); // Check if the order is confirmed
+                return (
+                  <tr key={order._id} className={isConfirmed ? 'confirmed' : ''}>
+                    <td>{order._id}</td>
+                    <td>{order.name}</td>
+                    <td>{order.phone}</td>
+                    <td>{order.address}</td>
+                    <td>{order.deliveryOption}</td>
+                    <td>{order.paymentMethod}</td>
+                    <td>{order.transactionId || 'N/A'}</td>
+                    <td>BDT {order.totalAmount.toFixed(2)}</td>
+                    <td>
+                      {order.orderSummary.map((item, index) => (
+                        <div key={index} className="order-item-summary">
+                          {item.productName} (x{item.quantity})
+                        </div>
+                      ))}
+                    </td>
+                    <td>{new Date(order.createdAt).toLocaleString()}</td>
+                    <td>
+                      <div className="order-actions">
+                        <button
+                          className={`action-btn cancel ${isConfirmed ? 'disabled-button' : ''}`}
+                          onClick={() => handleAction(order._id, 'cancel')}
+                          disabled={isConfirmed}
+                        >
+                          Order Cancel
+                        </button>
+                        <button
+                          className={`action-btn edit ${isConfirmed ? 'disabled-button' : ''}`}
+                          onClick={() => handleAction(order._id, 'edit')}
+                          disabled={isConfirmed}
+                        >
+                          Order Edit
+                        </button>
+                        <button
+                          className={`action-btn confirm ${isConfirmed ? 'disabled-button' : ''}`}
+                          onClick={() => handleAction(order._id, 'confirm')}
+                          disabled={isConfirmed}
+                        >
+                          Confirm Order
+                        </button>
+                        <button
+                          className={`action-btn place ${isConfirmed ? 'disabled-button' : ''}`}
+                          onClick={() => handleAction(order._id, 'place')}
+                          disabled={isConfirmed}
+                        >
+                          Place Order
+                        </button>
                       </div>
-                    ))}
-                  </td>
-                  <td>{new Date(order.createdAt).toLocaleString()}</td>
-                  <td>
-                    <div className="order-actions">
-                      <button
-                        className="action-btn cancel"
-                        onClick={() => handleAction(order._id, 'cancel')}
-                      >
-                        Order Cancel
-                      </button>
-                      <button
-                        className="action-btn edit"
-                        onClick={() => handleAction(order._id, 'edit')}
-                      >
-                        Order Edit
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -164,8 +210,49 @@ function OrderManagement() {
           }}
         />
       )}
+
+      {/* Place Order Modal */}
+      {isModalOpen && modalOrder && (
+  <div className="modal-overlay">
+    <div className="modal-window">
+      <button className="modal-close-btn" onClick={() => setIsModalOpen(false)}>
+        &times;
+      </button>
+      <h2>Place Order - Email Preview</h2>
+      <pre id="emailContent">
+        Dear Customer,{"\n\n"}
+        Your order #{modalOrder._id} has been confirmed. The details are as follows:
+        {"\n\n"}
+        Order ID: {modalOrder._id}{"\n"}
+        Customer Name: {modalOrder.name}{"\n"}
+        Phone: {modalOrder.phone}{"\n"}
+        Address: {modalOrder.address}{"\n"}
+        Delivery Option: {modalOrder.deliveryOption}{"\n"}
+        Payment Method: {modalOrder.paymentMethod}{"\n"}
+        Total Amount: BDT {modalOrder.totalAmount.toFixed(2)}{"\n"}
+        Order Summary: {modalOrder.orderSummary.map(item => `${item.productName} (x${item.quantity})`).join(", ")}{"\n\n"}
+        Estimated Delivery Date:{" "}
+              <input
+                type="date"
+                value={estimatedDate}
+                onChange={handleDateChange}
+                required
+              />{"\n\n"}
+        Thank you for shopping with us!{"\n\n"}
+        Best regards,{"\n\n"}
+        DalBhaat.com
+      </pre>
+      <button className="copy-email-btn" onClick={() => handleCopyToClipboard()}>
+        Copy Email to Clipboard
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
 
 export default OrderManagement;
+
+

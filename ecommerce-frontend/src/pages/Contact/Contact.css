@@ -27,8 +27,8 @@
 }
 
 .contact-item {
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    color: #fff;
+    background: linear-gradient(135deg, #f5f4f6, #a8c2ef);
+    color: #010101;
     border-radius: 10px;
     padding: 20px;
     width: calc(45% - 10px);
