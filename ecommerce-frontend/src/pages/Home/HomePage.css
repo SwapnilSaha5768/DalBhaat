@@ -202,3 +202,24 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+.sort-container {
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .sort-dropdown {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .sort-dropdown:hover {
+    border-color: #007bff;
+  }
+  

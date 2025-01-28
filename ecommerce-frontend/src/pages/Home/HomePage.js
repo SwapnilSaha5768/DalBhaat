@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, updateCartItem, updateWishlist} from '../../services/api'; // API services
+import { getProducts, updateCartItem, updateWishlist } from '../../services/api'; // API services
 import './HomePage.css';
 import Footer from '../../components/Footer/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,8 @@ function HomePage({ searchQuery = '' }) {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
   const [hoveredProduct, setHoveredProduct] = useState(null);
-  const productsPerPage = 5;
+  const [sortOption, setSortOption] = useState('name-asc');
+  const productsPerPage = 20;
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
@@ -33,11 +34,19 @@ function HomePage({ searchQuery = '' }) {
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
-  const filteredProducts = currentProducts.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = currentProducts
+    .filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortOption === 'name-asc') return a.name.localeCompare(b.name);
+      if (sortOption === 'name-desc') return b.name.localeCompare(a.name);
+      if (sortOption === 'price-asc') return a.price - b.price;
+      if (sortOption === 'price-desc') return b.price - a.price;
+      return 0;
+    });
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -47,7 +56,7 @@ function HomePage({ searchQuery = '' }) {
       alert('Product name is missing.');
       return;
     }
-  
+
     try {
       console.log(`Adding product to wishlist: ${productName}`);
       await updateWishlist(productName);
@@ -67,11 +76,11 @@ function HomePage({ searchQuery = '' }) {
         image: product.image,
         quantity: 1,
       });
-  
+
       const updatedCart = await updateCartItem(product.name, product.price, product.image, 1);
       console.log('Cart updated successfully:', updatedCart);
-  
-      setCart(updatedCart.items); 
+
+      setCart(updatedCart.items);
       //alert(${product.name} added to cart!);
     } catch (error) {
       console.error('Error adding product to cart:', error);
@@ -87,6 +96,22 @@ function HomePage({ searchQuery = '' }) {
   return (
     <div className="homepage">
       <h1>Our Products</h1>
+
+      <div className="sort-container">
+        <label htmlFor="sort">Sort by:</label>
+        <select
+          id="sort"
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="sort-dropdown"
+        >
+          <option value="name-asc">Name (A-Z)</option>
+          <option value="name-desc">Name (Z-A)</option>
+          <option value="price-asc">Price (Low to High)</option>
+          <option value="price-desc">Price (High to Low)</option>
+        </select>
+      </div>
+
       <div className="product-list">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -117,8 +142,7 @@ function HomePage({ searchQuery = '' }) {
                   )}
                 </div>
               ) : (
-                <button className="add-to-cart-btn"
-                onClick={() => handleAddToCart(product)}>
+                <button className="add-to-cart-btn" onClick={() => handleAddToCart(product)}>
                   Add to Cart
                 </button>
               )}

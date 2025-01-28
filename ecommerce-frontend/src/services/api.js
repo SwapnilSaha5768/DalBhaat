@@ -307,3 +307,12 @@ export const deleteCoupon = async (id) => {
   return response.data;
 };
 
+export const reduceCouponUsage = async (couponCode) => {
+  try {
+    const response = await axios.post('/api/coupons/reduce-usage', { couponCode });
+    return response.data;
+  } catch (error) {
+    console.error('Error reducing coupon usage:', error);
+    throw error;
+  }
+};

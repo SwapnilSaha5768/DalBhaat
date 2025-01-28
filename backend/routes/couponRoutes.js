@@ -1,5 +1,6 @@
 const express = require('express');
 const Coupon = require('../models/Coupon');
+const { reduceCouponUsage } = require('../controllers/couponController');
 const router = express.Router();
 
 // Validate Coupon
@@ -111,5 +112,7 @@ router.put('/:id', async (req, res) => {
       res.status(500).json({ message: 'Failed to update coupon', error: error.message });
     }
   });
+
+router.post('/reduce-usage', reduceCouponUsage);
 
 module.exports = router;
