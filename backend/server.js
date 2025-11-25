@@ -72,8 +72,15 @@ app.use('/api/income', incomeRoutes);
 
 
 // Root API route
+// Root API route
 app.get('/api', (req, res) => {
-  res.json({ message: 'Welcome to the API', status: 'success' });
+  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+  res.json({
+    message: 'Welcome to the API',
+    status: 'success',
+    dbStatus,
+    env: process.env.NODE_ENV
+  });
 });
 
 // Start the server
