@@ -77,12 +77,14 @@ app.get('/api', (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'test') {
+// Export the app for Vercel
+module.exports = app;
+
+// Start the server only if run directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
-
-module.exports = app;
 
 // Function to create a default admin user
 async function createDefaultAdmin() {
