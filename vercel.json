@@ -23,6 +23,14 @@
             "dest": "/backend/server.js"
         },
         {
+            "src": "/static/(.*)",
+            "dest": "/frontend/static/$1"
+        },
+        {
+            "src": "/(.*)\\.(png|jpg|jpeg|gif|ico|json|css|js)",
+            "dest": "/frontend/$1.$2"
+        },
+        {
             "handle": "filesystem"
         },
         {
