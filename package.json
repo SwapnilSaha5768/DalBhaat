@@ -1,0 +1,13 @@
+{
+    "name": "dalbhaat-root",
+    "version": "1.0.0",
+    "description": "Root script to run full stack application",
+    "scripts": {
+        "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+        "dev": "npx concurrently \"npm start --prefix backend\" \"npm start --prefix frontend\"",
+        "start": "npm run dev"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}

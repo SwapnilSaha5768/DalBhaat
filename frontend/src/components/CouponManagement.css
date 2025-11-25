@@ -1,0 +1,374 @@
+.coupon-management {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.coupon-management h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #1b1b1c;
+  margin-bottom: 20px;
+}
+
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.toggle-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  font-size: 1rem;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.toggle-btn:hover {
+  background-color: #0056b3;
+  color: #fff;
+}
+
+.coupon-form,
+.coupon-list {
+  width: 100%;
+  max-width: 600px;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.coupon-form h3,
+.coupon-list h3 {
+  font-size: 1.4rem;
+  color: #007bff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+}
+
+.coupon-form input {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 10px auto;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.coupon-form input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.coupon-form button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.coupon-form button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+.coupon-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.coupon-list table th,
+.coupon-list table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.coupon-list table th {
+  background-color: #007bff;
+  color: #fff;
+  text-align: center;
+}
+
+.coupon-list table td {
+  text-align: center;
+}
+
+.coupon-list table td button {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.coupon-list table td button:hover {
+  background-color: #f0f0f0;
+}
+
+.coupon-list table td button {
+  width: 80px;
+  /* Smaller width */
+  height: 30px;
+  /* Smaller height */
+  padding: 3px 5px;
+  /* Reduced padding */
+  margin-right: 5px;
+  /* Small gap between buttons */
+  border-radius: 4px;
+  /* Consistent rounded corners */
+  font-size: 12px;
+  /* Adjusted font size */
+  text-align: center;
+  /* Center text alignment */
+  display: inline-block;
+  /* Inline block for button alignment */
+  border: none;
+  /* Remove default border */
+  cursor: pointer;
+  /* Pointer cursor on hover */
+}
+
+.coupon-list table td button:first-child {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.coupon-list table td button:first-child:hover {
+  background-color: #e0a800;
+}
+
+.coupon-list table td button:last-child {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.coupon-list table td button:last-child:hover {
+  background-color: #c82333;
+}
+
+
+table input {
+  width: 90%;
+  padding: 5px;
+  font-size: 0.9rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+table input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+table button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+table button:hover {
+  background-color: #f0f0f0;
+}
+
+table button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+table button:first-child:hover {
+  background-color: #218838;
+}
+
+table button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+table button:last-child:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Design */
+/* Responsive Design - Card Layout for Mobile */
+@media (max-width: 768px) {
+  .coupon-management {
+    padding: 10px;
+  }
+
+  .coupon-management h2 {
+    font-size: 1.5rem;
+  }
+
+  .toggle-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .toggle-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .coupon-form,
+  .coupon-list {
+    padding: 15px;
+    background: transparent;
+    /* Remove background for list container on mobile to let cards stand out */
+    box-shadow: none;
+  }
+
+  .coupon-form {
+    background: #f9f9f9;
+    /* Keep form background */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .coupon-form input {
+    max-width: 100%;
+  }
+
+  /* Card Layout Transformation */
+  .coupon-list table,
+  .coupon-list thead,
+  .coupon-list tbody,
+  .coupon-list th,
+  .coupon-list td,
+  .coupon-list tr {
+    display: block;
+  }
+
+  /* Hide table headers (but not display: none, for accessibility) */
+  .coupon-list thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .coupon-list tr {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .coupon-list td {
+    /* Behave like a "row" */
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding: 10px;
+    /* Reset padding */
+    text-align: left;
+    /* Reset text align */
+    display: flex;
+    flex-direction: column;
+    /* Stack label and content vertically or use row if space permits */
+    align-items: flex-start;
+    min-height: auto;
+  }
+
+  /* Use a span or similar for label if we could modify HTML, but with pseudo-elements: */
+  .coupon-list td:before {
+    /* Now like a label above the content */
+    position: static;
+    /* Remove absolute positioning */
+    width: auto;
+    padding-right: 0;
+    white-space: normal;
+    text-align: left;
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  /* Label the data */
+  .coupon-list td:nth-of-type(1):before {
+    content: "Code";
+  }
+
+  .coupon-list td:nth-of-type(2):before {
+    content: "Discount (BDT)";
+  }
+
+  .coupon-list td:nth-of-type(3):before {
+    content: "Expiry Date";
+  }
+
+  .coupon-list td:nth-of-type(4):before {
+    content: "Usage Limit";
+  }
+
+  .coupon-list td:nth-of-type(5):before {
+    content: "Actions";
+  }
+
+  .coupon-list td:last-child {
+    border-bottom: none;
+    align-items: center;
+    /* Center buttons */
+    flex-direction: row;
+    /* Buttons side by side */
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .coupon-list td:last-child:before {
+    display: none;
+  }
+
+  .coupon-list td input {
+    width: 100%;
+    /* Full width inputs on mobile */
+    margin: 5px 0;
+    text-align: left;
+  }
+
+  /* Adjust buttons in card */
+  .coupon-list table td button {
+    width: auto;
+    padding: 8px 16px;
+    margin: 0 5px;
+    font-size: 0.9rem;
+  }
+}

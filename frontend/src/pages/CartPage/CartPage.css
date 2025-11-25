@@ -1,0 +1,198 @@
+.cart {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-family: 'Arial', sans-serif;
+  overflow-x: auto;
+  /* Enable horizontal scrolling */
+}
+
+.cart h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.cart-table-container {
+  overflow-x: auto;
+  /* Horizontal scrolling for large tables */
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.cart-table th,
+.cart-table td {
+  padding: 15px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.cart-table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.cart-table td img {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.cart-table td {
+  font-size: 1rem;
+  color: #555;
+}
+
+.quantity-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.quantity-control button {
+  background-color: #007bff;
+  color: white;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.quantity-control button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.quantity-control button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.quantity-control span {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.remove-btn {
+  background-color: #f44336;
+  color: white;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-btn:hover {
+  background-color: #d32f2f;
+}
+
+.cart-total {
+  text-align: right;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 20px;
+}
+
+.checkout-btn-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.checkout-btn {
+  background-color: #4caf50;
+  color: white;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.checkout-btn:hover {
+  background-color: #388e3c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cart {
+    padding: 10px;
+    margin: 20px auto;
+  }
+
+  /* Force table to not be like tables anymore */
+  .cart-table,
+  .cart-table tbody,
+  .cart-table th,
+  .cart-table td,
+  .cart-table tr {
+    display: block;
+  }
+
+  /* Hide table headers (but not display: none;, for accessibility) */
+  .cart-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .cart-table tr {
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    padding: 10px;
+  }
+
+  .cart-table td {
+    /* Behave  like a "row" */
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  .cart-table td:before {
+    /* Now like a table header */
+    content: attr(data-label);
+    font-weight: bold;
+    color: #333;
+    text-align: left;
+  }
+
+  .cart-table td:last-child {
+    border-bottom: none;
+    justify-content: flex-end;
+  }
+
+  .cart-table td img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .quantity-control {
+    justify-content: flex-end;
+  }
+}
