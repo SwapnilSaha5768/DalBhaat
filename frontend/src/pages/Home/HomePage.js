@@ -1,99 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import { getProducts, updateCartItem, updateWishlist } from '../../services/api'; // API services
-import ProductCard from '../../components/ProductCard';
-import SkeletonProductCard from '../../components/SkeletonProductCard';
-import './HomePage.css';
+import React, { useState, useEffect } from "react";
+import ProductCard from "../../components/ProductCard";
+import SkeletonProductCard from "../../components/SkeletonProductCard";
+import { getProducts, updateCartItem, updateWishlist } from "../../services/api"; // Use centralized API
+import "./HomePage.css";
 
-function HomePage({ searchQuery = '' }) {
+function HomePage() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortOption, setSortOption] = useState('name-asc');
-  // const [quantities, setQuantities] = useState({}); // Moved to ProductCard
-  const productsPerPage = 10;
+
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortOption, setSortOption] = useState(""); // price-asc, price-desc, name-asc
+
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
+  const categories = ["All", "Vegetables", "Fruits", "Spices", "Rice", "Others"];
+
+  // Fetch data from backend
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const productsData = await getProducts();
-        if (Array.isArray(productsData)) {
-          setProducts(productsData);
+    setLoading(true);
+    getProducts()
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProducts(data);
+          setFilteredProducts(data);
         } else {
-          console.warn('Products data is not an array:', productsData);
           setProducts([]);
+          setFilteredProducts([]);
         }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setProducts([]);
-      } finally {
         setLoading(false);
-      }
-    }
-
-    fetchProducts();
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   }, []);
 
-  // Filter and sort with safety checks
-  const filteredProducts = (products || [])
-    .filter(
-      (product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortOption === 'name-asc') return a.name.localeCompare(b.name);
-      if (sortOption === 'name-desc') return b.name.localeCompare(a.name);
-      if (sortOption === 'price-asc') return a.price - b.price;
-      if (sortOption === 'price-desc') return b.price - a.price;
-      return 0;
-    });
+  // Apply Category + Sorting Filtering
+  useEffect(() => {
+    let updated = [...products];
 
-  // Pagination logic with defensive fallback
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Wishlist handler
-  const handleAddToWishlist = async (productName) => {
-    if (!productName) {
-      alert('Product name is missing.');
-      return;
+    // Category filter
+    if (selectedCategory !== "All") {
+      updated = updated.filter((item) => item.category === selectedCategory);
     }
 
+    // Sorting options
+    if (sortOption === "price-asc") {
+      updated.sort((a, b) => a.price - b.price);
+    } else if (sortOption === "price-desc") {
+      updated.sort((a, b) => b.price - a.price);
+    } else if (sortOption === "name-asc") {
+      updated.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    setFilteredProducts(updated);
+    setCurrentPage(1);
+  }, [selectedCategory, sortOption, products]);
+
+  // Pagination logic
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  // Handlers (restored from previous version)
+  const handleAddToCart = async (product, quantity = 1) => {
     try {
-      console.log(`Adding product to wishlist: ${productName}`);
+      await updateCartItem(product.name, product.price, product.image, quantity);
+      alert(`${product.name} (x${quantity}) added to cart!`);
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      alert('Failed to add product to cart.');
+    }
+  };
+
+  const handleAddToWishlist = async (productName) => {
+    try {
       await updateWishlist(productName);
       alert(`${productName} added to wishlist!`);
     } catch (error) {
       console.error('Error adding to wishlist:', error);
       alert('Failed to add to wishlist.');
-    }
-  };
-
-  // Add to cart handler
-  const handleAddToCart = async (product, quantity = 1) => {
-    try {
-      console.log('Attempting to add product to cart:', {
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: quantity,
-      });
-
-      const updatedCart = await updateCartItem(product.name, product.price, product.image, quantity);
-      console.log('Cart updated successfully:', updatedCart);
-
-      alert(`${product.name} (x${quantity}) added to cart!`);
-      alert(`${product.name} (x${quantity}) added to cart!`);
-      // setQuantities({ ...quantities, [product.name]: 1 }); // Handled locally in ProductCard
-    } catch (error) {
-      console.error('Error adding product to cart:', error);
-      if (error.response) {
-        console.error('Server Response:', error.response.data);
-      }
-      alert('Failed to add product to cart.');
     }
   };
 
@@ -114,43 +103,72 @@ function HomePage({ searchQuery = '' }) {
     <div className="homepage">
       <h1>Our Products</h1>
 
-      <div className="sort-container">
-        <label htmlFor="sort">Sort by:</label>
-        <select
-          id="sort"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-          className="sort-dropdown"
-        >
-          <option value="name-asc">Name (A-Z)</option>
-          <option value="name-desc">Name (Z-A)</option>
-          <option value="price-asc">Price (Low to High)</option>
-          <option value="price-desc">Price (High to Low)</option>
-        </select>
+      {/* FILTER BAR */}
+      <div className="filter-bar">
+
+        {/* CATEGORY FILTER (DROPDOWN) */}
+        <div className="category-dropdown-container">
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="category-dropdown"
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* SORT BUTTON */}
+        <div className="sort-container">
+          <button
+            className={`sort-btn ${sortOption.startsWith("price") ? "active" : ""}`}
+            onClick={() => {
+              if (sortOption === "price-asc") setSortOption("price-desc");
+              else if (sortOption === "price-desc") setSortOption("name-asc");
+              else setSortOption("price-asc");
+            }}
+          >
+            Price
+            <span className="sort-icon">
+              {sortOption === "price-asc" ? "▲" :
+                sortOption === "price-desc" ? "▼" :
+                  "⇅"}
+            </span>
+          </button>
+        </div>
       </div>
 
+      {/* PRODUCT GRID */}
       <div className="product-list">
-        {currentProducts.length > 0 ? (
-          currentProducts.map((product) => (
+        {currentItems.length === 0 ? (
+          <p>No products found.</p>
+        ) : (
+          currentItems.map((product) => (
             <ProductCard
-              key={product.name}
+              key={product._id}
               product={product}
               onAddToCart={handleAddToCart}
               onAddToWishlist={handleAddToWishlist}
             />
           ))
-        ) : (
-          <p>No products available</p>
         )}
       </div>
+
+      {/* PAGINATION */}
       <div className="pagination">
-        {Array.from({ length: Math.ceil((filteredProducts?.length || 0) / productsPerPage) }, (_, index) => (
+        {[...Array(totalPages)].map((_, i) => (
           <button
-            key={index + 1}
-            className={`page-btn ${currentPage === index + 1 ? 'active' : ''}`}
-            onClick={() => paginate(index + 1)}
+            key={i}
+            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
+            onClick={() => setCurrentPage(i + 1)}
           >
-            {index + 1}
+            {i + 1}
           </button>
         ))}
       </div>

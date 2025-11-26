@@ -73,75 +73,79 @@ function CartPage() {
   };
 
   return (
-    <div className="cart">
-      <h2>Your Cart</h2>
+    <div className="cart-page-container">
+      <h2 className="cart-title">Your Shopping Cart</h2>
       {cartItems.length === 0 ? (
-        <p>Your cart is empty</p>
+        <div className="empty-cart">
+          <p>Your cart is currently empty.</p>
+          <button className="continue-shopping-btn" onClick={() => navigate('/')}>
+            Start Shopping
+          </button>
+        </div>
       ) : (
-        <>
-          <div className="cart-list-wrapper">
-            <div className="cart-row header">
-              <div className="col-image">Image</div>
-              <div className="col-name">Product</div>
-              <div className="col-price">Price</div>
-              <div className="col-quantity">Quantity</div>
-              <div className="col-total">Total</div>
-              <div className="col-actions">Actions</div>
-            </div>
-
+        <div className="cart-content">
+          <div className="cart-items-container">
             {cartItems.map((item) => (
-              <div key={item.name} className="cart-row">
-                <div className="col-image">
-                  <img src={item.image} alt={item.name} />
+              <div key={item.name} className="cart-item-card">
+                <div className="cart-item-details">
+                  <h3 className="item-name">{item.name}</h3>
+                  <p className="item-price">BDT {item.price}</p>
                 </div>
-                <div className="col-name">
-                  <span className="product-name">{item.name}</span>
-                </div>
-                <div className="col-price">
-                  BDT {item.price}
-                </div>
-                <div className="col-quantity">
+
+                <div className="cart-item-actions">
                   <div className="quantity-control">
                     <button
                       onClick={() => handleQuantityChange(item.name, item.quantity - 1)}
                       disabled={item.quantity <= 1}
+                      className="qty-btn"
                     >
                       -
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="qty-value">{item.quantity}</span>
                     <button
                       onClick={() => handleQuantityChange(item.name, item.quantity + 1)}
                       disabled={item.quantity >= item.maxQuantity}
+                      className="qty-btn"
                     >
                       +
                     </button>
                   </div>
-                </div>
-                <div className="col-total">
-                  BDT {(item.price * item.quantity).toFixed(0)}
-                </div>
-                <div className="col-actions">
+                  <div className="item-total">
+                    BDT {(item.price * item.quantity).toFixed(0)}
+                  </div>
                   <button
                     className="remove-btn"
                     onClick={() => handleRemoveItem(item.name)}
+                    aria-label="Remove item"
                   >
-                    Remove
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                      <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                    </svg>
                   </button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="cart-footer">
-            <div className="cart-total">
-              <h3>Total: BDT {total.toFixed(2)}</h3>
+
+          <div className="cart-summary">
+            <h3>Order Summary</h3>
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>BDT {total.toFixed(2)}</span>
             </div>
-            <div className="checkout-btn-container">
-              <button className="checkout-btn" onClick={handleCheckout}>
-                Checkout Now
-              </button>
+            <div className="summary-row total">
+              <span>Total</span>
+              <span>BDT {total.toFixed(2)}</span>
             </div>
+            <button className="checkout-btn" onClick={handleCheckout}>
+              Proceed to Checkout
+            </button>
+            <button className="continue-shopping-link" onClick={() => navigate('/')}>
+              Continue Shopping
+            </button>
           </div>
-        </>
+        </div>
       )}
     </div>
 

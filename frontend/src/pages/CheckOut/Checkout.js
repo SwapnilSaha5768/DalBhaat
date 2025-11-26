@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { placeOrder, reduceStock, validateCoupon, clearCart } from '../../services/api';
+import { placeOrder, reduceStock, validateCoupon, clearCart, getUsers } from '../../services/api';
 import './CheckoutPage.css';
 
 function CheckoutPage() {
@@ -28,6 +28,29 @@ function CheckoutPage() {
       console.error('No cart items found! Redirecting to cart...');
       navigate('/cart');
     }
+
+    // Fetch user name
+    const fetchUserName = async () => {
+      try {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+          // Try to get name from localStorage first if available (optional optimization)
+          // Or fetch from API
+          const users = await getUsers(); // Assuming getUsers returns all users or we have a specific endpoint
+          // If getUsers returns { users: [] } or []
+          const userList = Array.isArray(users) ? users : users.users || [];
+          const currentUser = userList.find(u => u._id === userId || u.id === userId);
+
+          if (currentUser) {
+            setBillingInfo(prev => ({ ...prev, name: currentUser.name }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+    fetchUserName();
+
   }, [location, navigate]);
 
   const calculateTotal = (items, deliveryCharge, discount) => {
@@ -120,19 +143,39 @@ function CheckoutPage() {
 
   return (
     <div className="checkout-container">
+      <div className="checkout-right">
+        <h2>Order Summary</h2>
+        <div className="order-summary-scroll">
+          {cartItems.map((item) => (
+            <div key={item.name} className="order-item">
+              <img src={item.image} alt={item.name} className="order-item-image" />
+              <div className="order-item-details">
+                <h4>{item.name}</h4>
+                <p>Price: BDT {item.price}</p>
+                <p>Quantity: {item.quantity}</p>
+                <p>Subtotal: BDT {(item.price * item.quantity).toFixed(2)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="coupon-container">
+          <input
+            type="text"
+            placeholder="Enter Coupon Code"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+          />
+          <button onClick={handleApplyCoupon}>Apply Coupon</button>
+        </div>
+        <p><strong>Discount:</strong> BDT {discount}</p>
+        <p><strong>Total Amount:</strong> BDT {finalTotal.toFixed(2)}</p>
+      </div>
       <div className="checkout-left">
         <h2>Billing Information</h2>
         <form>
           <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={billingInfo.name}
-              onChange={handleInputChange}
-              required
-            />
+            <label>Name</label>
+            <div className="read-only-field">{billingInfo.name || 'Loading...'}</div>
           </div>
           <div className="form-group">
             <label htmlFor="phone">Phone Number</label>
@@ -202,33 +245,6 @@ function CheckoutPage() {
         <button className="place-order-btn" onClick={handlePlaceOrder}>
           Place Order
         </button>
-      </div>
-      <div className="checkout-right">
-        <h2>Order Summary</h2>
-        <div className="order-summary-scroll">
-          {cartItems.map((item) => (
-            <div key={item.name} className="order-item">
-              <img src={item.image} alt={item.name} className="order-item-image" />
-              <div className="order-item-details">
-                <h4>{item.name}</h4>
-                <p>Price: BDT {item.price}</p>
-                <p>Quantity: {item.quantity}</p>
-                <p>Subtotal: BDT {(item.price * item.quantity).toFixed(2)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="coupon-container">
-          <input
-            type="text"
-            placeholder="Enter Coupon Code"
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value)}
-          />
-          <button onClick={handleApplyCoupon}>Apply Coupon</button>
-        </div>
-        <p><strong>Discount:</strong> BDT {discount}</p>
-        <p><strong>Total Amount:</strong> BDT {finalTotal.toFixed(2)}</p>
       </div>
     </div>
   );

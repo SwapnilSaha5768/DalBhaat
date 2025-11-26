@@ -100,6 +100,7 @@ function EditDeleteProduct() {
         <thead>
           <tr>
             <th>Name</th>
+            <th>Category</th>
             <th>Price (BDT)</th>
             <th>Quantity</th>
             <th>Actions</th>
@@ -109,6 +110,20 @@ function EditDeleteProduct() {
           {filteredProducts.map((product) => (
             <tr key={product._id}>
               <td data-label="Name">{product.name}</td>
+              <td data-label="Category">
+                <select
+                  value={product.category || 'Others'}
+                  onChange={(e) =>
+                    handleInputChange(product._id, 'category', e.target.value)
+                  }
+                >
+                  {['Vegetables', 'Fruits', 'Spices', 'Rice', 'Others'].map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </td>
               <td data-label="Price (BDT)">
                 <input
                   type="number"
@@ -134,6 +149,7 @@ function EditDeleteProduct() {
                     handleUpdate(product._id, {
                       price: product.price,
                       quantity: product.quantity,
+                      category: product.category,
                     })
                   }
                 >

@@ -13,9 +13,9 @@ export const getProducts = async (name, price, quantity, description, image) => 
   }
 };
 
-export const addProducts = async (name, price, quantity, description, image) => {
+export const addProducts = async (name, price, quantity, description, image, category) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/products`, { name, price, quantity, description, image });
+    const response = await axios.post(`${API_BASE_URL}/products`, { name, price, quantity, description, image, category });
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
