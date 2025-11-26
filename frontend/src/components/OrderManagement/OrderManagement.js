@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAllOrders, updateOrderDetails, cancelOrder, completeOrder, updateOrderStatus } from '../services/api'; // Import API
-import EditOrderModal from './EditOrderModal';
+import { getAllOrders, updateOrderDetails, cancelOrder, completeOrder, updateOrderStatus } from '../../services/api'; // Import API
+import EditOrderModal from '../EditOrderModal/EditOrderModal';
 import './OrderManagement.css';
 
 function OrderManagement() {

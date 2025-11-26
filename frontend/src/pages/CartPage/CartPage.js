@@ -78,63 +78,70 @@ function CartPage() {
       {cartItems.length === 0 ? (
         <p>Your cart is empty</p>
       ) : (
-        <div className="cart-table-container">
-          <table className="cart-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map((item) => (
-                <tr key={item.name}>
-                  <td data-label="Product">
-                    <img src={item.image} alt={item.name} />
-                  </td>
-                  <td data-label="Name">{item.name}</td>
-                  <td data-label="Price">BDT {item.price}</td>
-                  <td data-label="Quantity">
-                    <div className="quantity-control">
-                      <button
-                        onClick={() => handleQuantityChange(item.name, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        -
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() => handleQuantityChange(item.name, item.quantity + 1)}
-                        disabled={item.quantity >= item.maxQuantity}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </td>
-                  <td data-label="Actions">
+        <>
+          <div className="cart-list-wrapper">
+            <div className="cart-row header">
+              <div className="col-image">Image</div>
+              <div className="col-name">Product</div>
+              <div className="col-price">Price</div>
+              <div className="col-quantity">Quantity</div>
+              <div className="col-total">Total</div>
+              <div className="col-actions">Actions</div>
+            </div>
+
+            {cartItems.map((item) => (
+              <div key={item.name} className="cart-row">
+                <div className="col-image">
+                  <img src={item.image} alt={item.name} />
+                </div>
+                <div className="col-name">
+                  <span className="product-name">{item.name}</span>
+                </div>
+                <div className="col-price">
+                  BDT {item.price}
+                </div>
+                <div className="col-quantity">
+                  <div className="quantity-control">
                     <button
-                      className="remove-btn"
-                      onClick={() => handleRemoveItem(item.name)}
+                      onClick={() => handleQuantityChange(item.name, item.quantity - 1)}
+                      disabled={item.quantity <= 1}
                     >
-                      Remove
+                      -
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="cart-total">
-            <h3>Total: BDT {total.toFixed(2)}</h3>
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange(item.name, item.quantity + 1)}
+                      disabled={item.quantity >= item.maxQuantity}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="col-total">
+                  BDT {(item.price * item.quantity).toFixed(0)}
+                </div>
+                <div className="col-actions">
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleRemoveItem(item.name)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="checkout-btn-container">
-            <button className="checkout-btn" onClick={handleCheckout}>
-              Checkout Now
-            </button>
+          <div className="cart-footer">
+            <div className="cart-total">
+              <h3>Total: BDT {total.toFixed(2)}</h3>
+            </div>
+            <div className="checkout-btn-container">
+              <button className="checkout-btn" onClick={handleCheckout}>
+                Checkout Now
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
 

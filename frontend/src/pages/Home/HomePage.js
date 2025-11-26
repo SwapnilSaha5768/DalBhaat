@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, updateCartItem, updateWishlist } from '../../services/api'; // API services
+import ProductCard from '../../components/ProductCard';
+import SkeletonProductCard from '../../components/SkeletonProductCard';
 import './HomePage.css';
 
 function HomePage({ searchQuery = '' }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState('name-asc');
-  const [quantities, setQuantities] = useState({});
+  // const [quantities, setQuantities] = useState({}); // Moved to ProductCard
   const productsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -31,13 +33,8 @@ function HomePage({ searchQuery = '' }) {
     fetchProducts();
   }, []);
 
-  // Pagination logic with defensive fallback
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = (products || []).slice(indexOfFirstProduct, indexOfLastProduct);
-
   // Filter and sort with safety checks
-  const filteredProducts = (currentProducts || [])
+  const filteredProducts = (products || [])
     .filter(
       (product) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,6 +47,11 @@ function HomePage({ searchQuery = '' }) {
       if (sortOption === 'price-desc') return b.price - a.price;
       return 0;
     });
+
+  // Pagination logic with defensive fallback
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -84,8 +86,8 @@ function HomePage({ searchQuery = '' }) {
       console.log('Cart updated successfully:', updatedCart);
 
       alert(`${product.name} (x${quantity}) added to cart!`);
-      // Reset quantity to 1 after adding
-      setQuantities({ ...quantities, [product.name]: 1 });
+      alert(`${product.name} (x${quantity}) added to cart!`);
+      // setQuantities({ ...quantities, [product.name]: 1 }); // Handled locally in ProductCard
     } catch (error) {
       console.error('Error adding product to cart:', error);
       if (error.response) {
@@ -95,7 +97,18 @@ function HomePage({ searchQuery = '' }) {
     }
   };
 
-  if (loading) return <p>Loading products...</p>;
+  if (loading) {
+    return (
+      <div className="homepage">
+        <h1>Our Products</h1>
+        <div className="product-list">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <SkeletonProductCard key={index} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="homepage">
@@ -117,69 +130,21 @@ function HomePage({ searchQuery = '' }) {
       </div>
 
       <div className="product-list">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div
+        {currentProducts.length > 0 ? (
+          currentProducts.map((product) => (
+            <ProductCard
               key={product.name}
-              className="product-card"
-
-            >
-              <div
-                className="product-image"
-                style={{ backgroundImage: `url(${product.image})` }}
-              ></div>
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <div className="price">BDT {product.price}</div>
-              {product.quantity === 0 ? (
-                <div className="out-of-stock-container">
-                  <div className="out-of-stock-badge">Out of Stock</div>
-                  <button
-                    className="wishlist-btn-visible"
-                    onClick={() => handleAddToWishlist(product.name)}
-                  >
-                    Add to Wishlist
-                  </button>
-                </div>
-              ) : (
-                <div className="add-to-cart-container">
-                  <div className="quantity-selector">
-                    <button
-                      className="qty-btn"
-                      onClick={() => {
-                        const currentQty = quantities[product.name] || 1;
-                        if (currentQty > 1) {
-                          setQuantities({ ...quantities, [product.name]: currentQty - 1 });
-                        }
-                      }}
-                    >-</button>
-                    <span className="qty-display">{quantities[product.name] || 1}</span>
-                    <button
-                      className="qty-btn"
-                      onClick={() => {
-                        const currentQty = quantities[product.name] || 1;
-                        if (currentQty < product.quantity) {
-                          setQuantities({ ...quantities, [product.name]: currentQty + 1 });
-                        }
-                      }}
-                    >+</button>
-                  </div>
-                  <button
-                    className="add-to-cart-btn"
-                    onClick={() => handleAddToCart(product, quantities[product.name] || 1)}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              )}
-            </div>
+              product={product}
+              onAddToCart={handleAddToCart}
+              onAddToWishlist={handleAddToWishlist}
+            />
           ))
         ) : (
           <p>No products available</p>
         )}
       </div>
       <div className="pagination">
-        {Array.from({ length: Math.ceil((products?.length || 0) / productsPerPage) }, (_, index) => (
+        {Array.from({ length: Math.ceil((filteredProducts?.length || 0) / productsPerPage) }, (_, index) => (
           <button
             key={index + 1}
             className={`page-btn ${currentPage === index + 1 ? 'active' : ''}`}

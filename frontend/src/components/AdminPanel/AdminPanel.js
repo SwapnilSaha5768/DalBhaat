@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductForm from '../ProductForm';
 import EditDeleteProduct from '../EditDeleteProduct';
 import UserManagement from '../UserManagement';
-import OrderManagement from '../OrderManagement';
+import OrderManagement from '../OrderManagement/OrderManagement';
 import WishlistDetails from '../WishlistDetails';
 import CouponManagement from '../CouponManagement';
 import { getProducts, getUsers, getOrders, getCoupons, getTotalIncome } from '../../services/api';

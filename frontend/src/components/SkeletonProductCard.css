@@ -1,0 +1,65 @@
+.skeleton-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    pointer-events: none;
+    /* Prevent interaction */
+}
+
+.skeleton-image {
+    width: 100%;
+    padding-bottom: 75%;
+    /* Match product image aspect ratio */
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
+    background-size: 1000px 100%;
+}
+
+.skeleton-text {
+    height: 16px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
+    background-size: 1000px 100%;
+}
+
+.skeleton-title {
+    width: 80%;
+    margin: 10px auto;
+}
+
+.skeleton-price {
+    width: 40%;
+    margin: 0 auto 15px;
+}
+
+.skeleton-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.skeleton-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
+    background-size: 1000px 100%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}

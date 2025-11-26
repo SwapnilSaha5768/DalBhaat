@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/Home/HomePage';
 import CartPage from './pages/CartPage/CartPage';
 import LoginPage from './pages/Login/LoginPage';
-import OrderManagement from './components/OrderManagement';
+import OrderManagement from './components/OrderManagement/OrderManagement';
 import RegistrationPage from './pages/Registration/RegistrationPage';
 import AdminPanel from './components/AdminPanel/AdminPanel';
 import Header from './components/Header/Header';
@@ -69,8 +69,8 @@ function App() {
 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />} />
+          <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <RegistrationPage />} />
           <Route
             path="/admin"
             element={
