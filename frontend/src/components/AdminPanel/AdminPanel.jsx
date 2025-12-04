@@ -7,7 +7,7 @@ import WishlistDetails from './Product Component/WishlistDetails';
 import CouponManagement from '../CouponManagement';
 import { getProducts, getUsers, getOrders, getCoupons, getTotalIncome } from '../../services/api';
 
-function AdminPanel({ isOpen, setIsOpen, onLogout }) {
+function AdminPanel({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, onLogout }) {
     const [activeSection, setActiveSection] = useState('dashboard');
     const [expandedMenus, setExpandedMenus] = useState({ products: true });
     const [stats, setStats] = useState({
@@ -68,10 +68,15 @@ function AdminPanel({ isOpen, setIsOpen, onLogout }) {
     }, []);
 
     const toggleMenu = (menu) => {
-        setExpandedMenus(prev => ({
-            ...prev,
-            [menu]: !prev[menu]
-        }));
+        if (isCollapsed) {
+            setIsCollapsed(false);
+            setExpandedMenus(prev => ({ ...prev, [menu]: true }));
+        } else {
+            setExpandedMenus(prev => ({
+                ...prev,
+                [menu]: !prev[menu]
+            }));
+        }
     };
 
     const handleSectionChange = (section) => {
@@ -154,32 +159,39 @@ function AdminPanel({ isOpen, setIsOpen, onLogout }) {
 
             {/* Sidebar */}
             <aside
-                className={`fixed md:fixed top-[70px] left-0 bottom-0 w-64 bg-gray-900 text-white z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto
+                className={`fixed md:fixed top-[70px] left-0 bottom-0 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white z-50 transform transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${isCollapsed ? 'w-20' : 'w-64'}
         `}
             >
+
+
                 <nav className="p-4 space-y-2">
                     <button
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeSection === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+                        className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg transition-colors ${activeSection === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
                         onClick={() => handleSectionChange('dashboard')}
+                        title={isCollapsed ? "Dashboard" : ""}
                     >
                         <span className="text-xl">📊</span>
-                        <span className="font-medium">Dashboard</span>
+                        {!isCollapsed && <span className="font-medium whitespace-nowrap">Dashboard</span>}
                     </button>
 
                     <div className="space-y-1">
                         <button
-                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${expandedMenus.products ? 'bg-gray-800/50 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+                            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'} py-3 rounded-lg transition-colors ${expandedMenus.products ? 'bg-gray-800/50 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
                             onClick={() => toggleMenu('products')}
+                            title={isCollapsed ? "Products" : ""}
                         >
-                            <div className="flex items-center gap-3">
+                            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                                 <span className="text-xl">📦</span>
-                                <span className="font-medium">Products</span>
+                                {!isCollapsed && <span className="font-medium whitespace-nowrap">Products</span>}
                             </div>
-                            <span className={`text-xs transition-transform duration-200 ${expandedMenus.products ? 'rotate-180' : ''}`}>▼</span>
+                            {!isCollapsed && (
+                                <span className={`text-xs transition-transform duration-200 ${expandedMenus.products ? 'rotate-180' : ''}`}>▼</span>
+                            )}
                         </button>
 
-                        {expandedMenus.products && (
+                        {expandedMenus.products && !isCollapsed && (
                             <div className="pl-4 space-y-1 mt-1">
                                 <button
                                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${activeSection === 'addProduct' ? 'text-indigo-400 font-semibold bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
@@ -204,46 +216,48 @@ function AdminPanel({ isOpen, setIsOpen, onLogout }) {
                     </div>
 
                     <button
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeSection === 'users' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+                        className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg transition-colors ${activeSection === 'users' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
                         onClick={() => handleSectionChange('users')}
+                        title={isCollapsed ? "Users" : ""}
                     >
                         <span className="text-xl">👥</span>
-                        <span className="font-medium">Users</span>
+                        {!isCollapsed && <span className="font-medium whitespace-nowrap">Users</span>}
                     </button>
 
                     <button
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeSection === 'orders' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+                        className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg transition-colors ${activeSection === 'orders' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
                         onClick={() => handleSectionChange('orders')}
+                        title={isCollapsed ? "Orders" : ""}
                     >
                         <span className="text-xl">🛒</span>
-                        <span className="font-medium">Orders</span>
+                        {!isCollapsed && <span className="font-medium whitespace-nowrap">Orders</span>}
                     </button>
 
                     <button
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeSection === 'coupons' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+                        className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg transition-colors ${activeSection === 'coupons' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
                         onClick={() => handleSectionChange('coupons')}
+                        title={isCollapsed ? "Coupons" : ""}
                     >
                         <span className="text-xl">🎟️</span>
-                        <span className="font-medium">Coupons</span>
+                        {!isCollapsed && <span className="font-medium whitespace-nowrap">Coupons</span>}
                     </button>
 
                     <div className="pt-4 mt-4 border-t border-gray-800">
                         <button
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors`}
                             onClick={onLogout}
+                            title={isCollapsed ? "Logout" : ""}
                         >
                             <span className="text-xl">🚪</span>
-                            <span className="font-medium">Logout</span>
+                            {!isCollapsed && <span className="font-medium whitespace-nowrap">Logout</span>}
                         </button>
                     </div>
                 </nav>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 mt-[70px] p-6 min-h-[calc(100vh-70px)]">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-full">
-                    {renderContent()}
-                </div>
+            <main className={`flex-1 p-6 min-h-[calc(100vh-70px)] transition-all duration-300 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+                {renderContent()}
             </main>
         </div>
     );

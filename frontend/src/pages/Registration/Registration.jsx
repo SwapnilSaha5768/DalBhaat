@@ -21,7 +21,7 @@ function RegistrationPage() {
         setSlideOut(true);
         setTimeout(() => {
             navigate('/login');
-        }, 500); // Match animation duration
+        }, 600); // Match animation duration
     };
 
     return (
@@ -38,7 +38,7 @@ function RegistrationPage() {
                                 id="name"
                                 type="text"
                                 value={name}
-                                placeholder="John Doe"
+                                placeholder="Name"
                                 onChange={(e) => setName(e.target.value)}
                                 required
                                 className="w-full p-3 border border-[#e1e1e1] rounded-lg text-[0.95rem] text-[#333] bg-white transition-all duration-300 focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)] focus:outline-none placeholder-[#aaa]"
@@ -50,7 +50,7 @@ function RegistrationPage() {
                                 id="email"
                                 type="email"
                                 value={email}
-                                placeholder="john@example.com"
+                                placeholder="Email"
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className="w-full p-3 border border-[#e1e1e1] rounded-lg text-[0.95rem] text-[#333] bg-white transition-all duration-300 focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)] focus:outline-none placeholder-[#aaa]"
@@ -62,7 +62,7 @@ function RegistrationPage() {
                                 id="password"
                                 type="password"
                                 value={password}
-                                placeholder="••••••••"
+                                placeholder="********"
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className="w-full p-3 border border-[#e1e1e1] rounded-lg text-[0.95rem] text-[#333] bg-white transition-all duration-300 focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)] focus:outline-none placeholder-[#aaa]"
@@ -80,7 +80,7 @@ function RegistrationPage() {
 
                 {/* Right Panel (Dark) */}
                 <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-panelSlideLeft' : 'animate-panelEnterRight'}`}>
-                    <h2 className="text-[2.2rem] font-bold mb-[15px] leading-[1.2]">Join Us</h2>
+                    <h2 className="text-[2.2rem] font-bold mb-[15px] text-white/80 leading-[1.2]">Join Us</h2>
                     <p className="text-[0.95rem] leading-[1.5] text-white/80 mb-[30px]">
                         Create an account to unlock seamless shopping.
                     </p>

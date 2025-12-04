@@ -39,7 +39,7 @@ function Login({ onLogin }) {
         setSlideOut(true);
         setTimeout(() => {
             navigate('/register');
-        }, 500); // Match animation duration
+        }, 600); // Match animation duration
     };
 
     return (
@@ -48,7 +48,7 @@ function Login({ onLogin }) {
 
                 {/* Left Panel (Dark) */}
                 <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-panelSlideRight' : 'animate-panelEnterLeft'}`}>
-                    <h2 className="text-[2.2rem] font-bold mb-4 leading-[1.2]">Welcome Back</h2>
+                    <h2 className="text-[2.2rem] font-bold mb-4 text-white/80 leading-[1.2]">Welcome Back</h2>
                     <p className="text-[0.95rem] leading-[1.5] text-white/80 mb-[30px]">
                         Sign in to access our store, track your orders, and continue your shopping journey.
                     </p>

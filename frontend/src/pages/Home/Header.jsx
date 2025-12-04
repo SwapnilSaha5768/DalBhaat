@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getCartItems } from '../../services/api';
 
-function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSidebar }) {
+function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSidebar, toggleSidebarCollapse, isSidebarCollapsed }) {
     const [query, setQuery] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [cartCount, setCartCount] = useState(0);
@@ -63,11 +63,23 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 bg-gray-900 text-white shadow-md z-50 h-[70px]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
+        <header className="fixed top-0 left-0 right-0 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white shadow-md z-50 h-[70px]">
+            <div className={`${location.pathname.startsWith('/admin') ? 'w-full' : 'max-w-7xl mx-auto'} px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4`}>
 
                 {/* Logo */}
-                <div className="flex-shrink-0">
+                <div className="flex items-center gap-4">
+                    {/* Desktop Admin Sidebar Toggle */}
+                    {isAdmin && location.pathname.startsWith('/admin') && (
+                        <button
+                            onClick={toggleSidebarCollapse}
+                            className="hidden md:flex p-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800"
+                            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    )}
                     <a href="/" className="text-2xl font-bold text-white tracking-tight hover:text-gray-200 transition-colors">
                         DalBhaat
                     </a>

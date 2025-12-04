@@ -19,12 +19,17 @@ import { clearCart } from './services/api';
 
 
 
-function App() {
+import { useLocation } from 'react-router-dom';
+
+function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminSidebarOpen, setAdminSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // Check authentication status on mount
   useEffect(() => {
@@ -54,22 +59,22 @@ function App() {
     localStorage.removeItem('userId');
   };
 
-
-
   if (authLoading) {
     return <div>Loading...</div>; // Or a proper loading spinner
   }
 
   return (
-    <Router>
+    <div className="flex flex-col min-h-screen">
       <Header
         setSearchQuery={setSearchQuery}
         isLoggedIn={isLoggedIn}
         isAdmin={isAdmin}
         onLogout={handleLogout}
         toggleAdminSidebar={() => setAdminSidebarOpen(!adminSidebarOpen)}
+        toggleSidebarCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isSidebarCollapsed={isSidebarCollapsed}
       />
-      <main>
+      <main className="flex-grow pt-[70px]">
         <Routes>
           <Route
             path="/"
@@ -77,7 +82,6 @@ function App() {
           />
 
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />} />
           <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <RegistrationPage />} />
           <Route
@@ -87,6 +91,8 @@ function App() {
                 <AdminPanel
                   isOpen={adminSidebarOpen}
                   setIsOpen={setAdminSidebarOpen}
+                  isCollapsed={isSidebarCollapsed}
+                  setIsCollapsed={setIsSidebarCollapsed}
                   onLogout={handleLogout}
                 />
               </ProtectedAdminRoute>
@@ -101,7 +107,17 @@ function App() {
           <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <Navigate to="/login" />} />
         </Routes>
       </main>
-      <Footer />
+      <div className={isAdminRoute ? `${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} transition-all duration-300` : "transition-all duration-300"}>
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

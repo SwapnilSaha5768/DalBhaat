@@ -58,23 +58,23 @@ function WishlistDetails() {
             <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-emerald-500 text-white">
-                            <th className="p-3 text-left font-semibold rounded-tl-lg">Product Name</th>
-                            <th className="p-3 text-left font-semibold">Click Count</th>
-                            <th className="p-3 text-left font-semibold rounded-tr-lg">Actions</th>
+                        <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+                            <th className="px-6 py-4 text-left">Product Name</th>
+                            <th className="px-6 py-4 text-left">Click Count</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {wishlist.map((item, index) => (
                             <tr
                                 key={item.name}
-                                className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                                className="hover:bg-gray-50/50 transition-colors border-b border-gray-50"
                             >
-                                <td className="p-3 text-gray-700 border-x border-gray-100">{item.name}</td>
-                                <td className="p-3 text-gray-700 border-x border-gray-100">{item.clickCount}</td>
-                                <td className="p-3 border-x border-gray-100">
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
+                                <td className="px-6 py-4 text-sm text-gray-600">{item.clickCount}</td>
+                                <td className="px-6 py-4 text-right">
                                     <button
-                                        className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-colors shadow-sm"
+                                        className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-medium rounded-md hover:bg-red-100 transition-colors"
                                         onClick={() => handleDelete(item.name)}
                                     >
                                         Delete
