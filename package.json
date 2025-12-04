@@ -5,7 +5,8 @@
     "scripts": {
         "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
         "dev": "npx concurrently \"npm start --prefix backend\" \"npm start --prefix frontend\"",
-        "start": "npm run dev"
+        "start": "npm run dev",
+        "build": "npm run build --prefix frontend"
     },
     "devDependencies": {
         "concurrently": "^8.2.2"

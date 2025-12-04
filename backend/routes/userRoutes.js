@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -75,6 +76,61 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Get user profile
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    console.log('GET /profile request for user:', req.user.id);
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      console.log('User not found for id:', req.user.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    console.log('User found:', user.email);
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update user profile
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const { name, bio, phone, address, addresses, avatar } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.name = name || user.name;
+    user.bio = bio || user.bio;
+    user.phone = phone || user.phone;
+    user.address = address || user.address; // Keep updating legacy field if provided
+
+    if (addresses) {
+      user.addresses = addresses;
+    }
+
+    user.avatar = avatar || user.avatar;
+
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+      bio: updatedUser.bio,
+      phone: updatedUser.phone,
+      address: updatedUser.address,
+      addresses: updatedUser.addresses,
+      avatar: updatedUser.avatar,
+    });
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 router.put('/:id', async (req, res) => {

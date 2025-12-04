@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/Home/HomePage';
 import CartPage from './pages/CartPage/CartPage';
-import LoginPage from './pages/Login/LoginPage';
+import LoginPage from './pages/Login/Login';
 import OrderManagement from './components/OrderManagement/OrderManagement';
-import RegistrationPage from './pages/Registration/RegistrationPage';
+import RegistrationPage from './pages/Registration/Registration';
 import AdminPanel from './components/AdminPanel/AdminPanel';
-import Header from './components/Header/Header';
+import Header from './pages/Home/Header';
 import Footer from './components/Footer/Footer';
 import Checkout from './pages/CheckOut/Checkout';
 import FAQ from './pages/faq/FAQ';
 import Contact from './pages/Contact/Contact';
 import OrderConfirmation from './pages/CheckOut/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
+import ProfilePage from './pages/Profile/Profile';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import { clearCart } from './services/api';
 
@@ -23,6 +24,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminSidebarOpen, setAdminSidebarOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -30,6 +32,7 @@ function App() {
     const adminStatus = localStorage.getItem('isAdmin') === 'true';
     setIsLoggedIn(!!token);
     setIsAdmin(adminStatus);
+    setAuthLoading(false);
   }, []);
 
   // Function to update auth state after login
@@ -50,6 +53,12 @@ function App() {
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('userId');
   };
+
+
+
+  if (authLoading) {
+    return <div>Loading...</div>; // Or a proper loading spinner
+  }
 
   return (
     <Router>
@@ -89,6 +98,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/profile" element={isLoggedIn ? <ProfilePage /> : <Navigate to="/login" />} />
         </Routes>
       </main>
       <Footer />

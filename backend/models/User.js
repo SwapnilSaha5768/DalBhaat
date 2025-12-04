@@ -6,6 +6,16 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
+  bio: { type: String, default: '' },
+  phone: { type: String, default: '' },
+  address: { type: String, default: '' }, // Deprecated but kept for backward compatibility
+  addresses: [{
+    street: { type: String, required: true },
+    city: { type: String, default: '' },
+    zip: { type: String, default: '' },
+    isDefault: { type: Boolean, default: false }
+  }],
+  avatar: { type: String, default: '' },
 });
 
 // Hash password before saving

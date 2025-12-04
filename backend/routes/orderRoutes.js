@@ -35,7 +35,22 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// Get orders by User ID
+const authMiddleware = require('../middleware/authMiddleware');
+
+// Get orders for the authenticated user
+router.get('/my-orders', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log('Fetching orders for authenticated user:', userId);
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching user orders:', error);
+    res.status(500).json({ error: 'Failed to fetch user orders' });
+  }
+});
+
+// Get orders by User ID (Admin or specific use case)
 router.get('/user/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;

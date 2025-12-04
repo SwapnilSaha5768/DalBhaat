@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { placeOrder, reduceStock, validateCoupon, clearCart, getUsers } from '../../services/api';
+import { placeOrder, reduceStock, validateCoupon, clearCart, getUserProfile } from '../../services/api';
 import './CheckoutPage.css';
 
 function CheckoutPage() {
@@ -20,6 +20,20 @@ function CheckoutPage() {
   const [discount, setDiscount] = useState(0);
   const [finalTotal, setFinalTotal] = useState(0);
 
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState('new');
+
+  const handleAddressSelect = React.useCallback((index, addresses = savedAddresses) => {
+    setSelectedAddressIndex(index);
+    if (index === 'new') {
+      setBillingInfo(prev => ({ ...prev, address: '' }));
+    } else {
+      const addr = addresses[index];
+      const formattedAddress = `${addr.street}, ${addr.city}, ${addr.zip}`;
+      setBillingInfo(prev => ({ ...prev, address: formattedAddress }));
+    }
+  }, [savedAddresses]);
+
   useEffect(() => {
     if (location.state && location.state.cartItems) {
       setCartItems(location.state.cartItems);
@@ -29,29 +43,36 @@ function CheckoutPage() {
       navigate('/cart');
     }
 
-    // Fetch user name
-    const fetchUserName = async () => {
+    // Fetch user profile
+    const fetchUserProfile = async () => {
       try {
         const userId = localStorage.getItem('userId');
         if (userId) {
-          // Try to get name from localStorage first if available (optional optimization)
-          // Or fetch from API
-          const users = await getUsers(); // Assuming getUsers returns all users or we have a specific endpoint
-          // If getUsers returns { users: [] } or []
-          const userList = Array.isArray(users) ? users : users.users || [];
-          const currentUser = userList.find(u => u._id === userId || u.id === userId);
+          const userProfile = await getUserProfile();
+          setBillingInfo(prev => ({
+            ...prev,
+            name: userProfile.name || '',
+            phone: userProfile.phone || '',
+          }));
 
-          if (currentUser) {
-            setBillingInfo(prev => ({ ...prev, name: currentUser.name }));
+          if (userProfile.addresses && userProfile.addresses.length > 0) {
+            setSavedAddresses(userProfile.addresses);
+            // Default to the default address if it exists, otherwise the first one
+            const defaultIndex = userProfile.addresses.findIndex(addr => addr.isDefault);
+            if (defaultIndex !== -1) {
+              handleAddressSelect(defaultIndex, userProfile.addresses);
+            } else {
+              handleAddressSelect(0, userProfile.addresses);
+            }
           }
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
     };
-    fetchUserName();
+    fetchUserProfile();
 
-  }, [location, navigate]);
+  }, [location, navigate, handleAddressSelect]);
 
   const calculateTotal = (items, deliveryCharge, discount) => {
     const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0) + deliveryCharge - discount;
@@ -68,7 +89,14 @@ function CheckoutPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBillingInfo((prev) => ({ ...prev, [name]: value }));
+
+    // If user types in address, switch selection to 'new' if it's not already
+    if (name === 'address' && selectedAddressIndex !== 'new') {
+      setSelectedAddressIndex('new');
+    }
   };
+
+
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -186,8 +214,29 @@ function CheckoutPage() {
               value={billingInfo.phone}
               onChange={handleInputChange}
               required
+              placeholder="Enter your phone number"
             />
           </div>
+
+          {savedAddresses.length > 0 && (
+            <div className="form-group">
+              <label>Select Address</label>
+              <select
+                value={selectedAddressIndex}
+                onChange={(e) => handleAddressSelect(e.target.value === 'new' ? 'new' : parseInt(e.target.value))}
+                className="address-select"
+                style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+              >
+                {savedAddresses.map((addr, index) => (
+                  <option key={index} value={index}>
+                    {addr.street}, {addr.city} {addr.isDefault ? '(Default)' : ''}
+                  </option>
+                ))}
+                <option value="new">+ Use a new address</option>
+              </select>
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="address">Billing Address</label>
             <textarea
@@ -196,6 +245,8 @@ function CheckoutPage() {
               value={billingInfo.address}
               onChange={handleInputChange}
               required
+              placeholder="Enter your delivery address"
+              rows="3"
             />
           </div>
         </form>

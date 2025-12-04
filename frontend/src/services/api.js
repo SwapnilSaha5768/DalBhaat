@@ -285,11 +285,15 @@ export const getAllOrders = async () => {
   }
 };
 
-export const getUserOrders = async (userId) => {
+export const getUserOrders = async () => {
   try {
-    console.log('getUserOrders - Calling API with userId:', userId);
-    console.log('getUserOrders - Full URL:', `${API_BASE_URL}/orders/user/${userId}`);
-    const response = await axios.get(`${API_BASE_URL}/orders/user/${userId}`);
+    const token = localStorage.getItem('authToken');
+    if (!token) throw new Error('No token found');
+
+    console.log('getUserOrders - Calling API for authenticated user');
+    const response = await axios.get(`${API_BASE_URL}/orders/my-orders`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     console.log('getUserOrders - Response:', response.data);
     return response.data;
   } catch (error) {
@@ -412,6 +416,36 @@ export const reduceCouponUsage = async (couponCode) => {
     return response.data;
   } catch (error) {
     console.error('Error reducing coupon usage:', error);
+    throw error;
+  }
+};
+
+export const getUserProfile = async () => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) throw new Error('No token found');
+
+    const response = await axios.get(`${API_BASE_URL}/users/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error;
+  }
+};
+
+export const updateUserProfile = async (profileData) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) throw new Error('No token found');
+
+    const response = await axios.put(`${API_BASE_URL}/users/profile`, profileData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user profile:', error);
     throw error;
   }
 };

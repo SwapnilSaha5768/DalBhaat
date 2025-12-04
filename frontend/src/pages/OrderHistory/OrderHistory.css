@@ -1,8 +1,9 @@
+/* not in use */
+
 .order-history-container {
     max-width: 1000px;
     margin: 40px auto;
     padding: 0 20px;
-    /* Ensure the container itself doesn't restrict the sticky header unreasonably */
     min-height: 60vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -14,23 +15,17 @@
     margin-bottom: 20px;
 }
 
-/* --- List Wrapper (The Scrollable Box) --- */
 .order-list-wrapper {
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    
-    /* 1. Define a height limit so it scrolls */
-    max-height: 70vh; /* Adjust this value to control how tall the list is before scrolling */
-    overflow-y: auto; /* Enables vertical scrolling inside the box */
-    position: relative; /* Context for the sticky header */
+    max-height: 70vh;
+    overflow-y: auto;
+    position: relative;
 }
-
-/* --- The Row Layout --- */
 .order-row {
     display: grid;
-    /* Columns: ID | Date | Items | Total | Status */
     grid-template-columns: 80px 110px 1fr 100px 110px;
     gap: 15px;
     padding: 14px 20px;
@@ -39,16 +34,12 @@
     font-size: 0.95rem;
     color: #4b5563;
 }
-
-/* --- The Header Bar (Sticky) --- */
 .order-row.header {
-    /* 2. Make it Stick */
     position: sticky; 
     top: 0; 
-    z-index: 10; /* Ensures it stays on top of the scrolling items */
+    z-index: 10;
     
-    /* Styling */
-    background-color: #f3f4f6; /* Must have background so items don't show through */
+    background-color: #f3f4f6;
     font-weight: 600;
     color: #374151;
     text-transform: uppercase;
@@ -65,7 +56,6 @@
     background-color: #f9fafb;
 }
 
-/* --- Column Styling --- */
 .col-id {
     font-family: monospace;
     color: #6366f1;
@@ -88,7 +78,6 @@
     text-align: right;
 }
 
-/* --- Status Badges --- */
 .status-badge {
     padding: 5px 10px;
     border-radius: 15px;
@@ -101,10 +90,9 @@
 .status-badge.Confirmed { background-color: #ECFDF5; color: #047857; }
 .status-badge.Cancelled { background-color: #FEF2F2; color: #B91C1C; }
 
-/* --- Mobile --- */
 @media (max-width: 768px) {
     .order-row.header {
-        display: none; /* Header is hidden on mobile */
+        display: none;
     }
 
     .order-row {
