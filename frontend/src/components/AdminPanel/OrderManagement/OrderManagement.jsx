@@ -120,149 +120,153 @@ function OrderManagement() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="p-12 text-center text-gray-500">Loading orders...</div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="p-12 text-center text-gray-500">No active orders found.</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
-                <th className="px-6 py-4">Order Info</th>
-                <th className="px-6 py-4">Customer Details</th>
-                <th className="px-6 py-4">Payment & Delivery</th>
-                <th className="px-6 py-4 w-64">Order Summary</th>
-                <th className="px-6 py-4">Total & Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredOrders.map((order) => {
-                const isConfirmed = order.status === 'Confirmed';
-                return (
-                  <tr key={order._id} className={`hover:bg-gray-50/50 transition-colors ${isConfirmed ? 'bg-green-50/30' : ''}`}>
-                    {/* Order Info */}
-                    <td className="px-6 py-4 align-top">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-mono font-medium text-gray-500">#{order._id.slice(-6).toUpperCase()}</span>
-                        <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
-                        <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </td>
-
-                    {/* Customer Details */}
-                    <td className="px-6 py-4 align-top">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium text-gray-900">{order.name}</span>
-                        <a href={`tel:${order.phone}`} className="text-xs text-indigo-600 hover:underline">{order.phone}</a>
-                        <div className="text-xs text-gray-500 mt-1 max-w-[150px] leading-relaxed" title={order.address}>
-                          {order.address}
+      {
+        loading ? (
+          <div className="p-12 text-center text-gray-500">Loading orders...</div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="p-12 text-center text-gray-500">No active orders found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+                  <th className="px-6 py-4">Order Info</th>
+                  <th className="px-6 py-4">Customer Details</th>
+                  <th className="px-6 py-4">Payment & Delivery</th>
+                  <th className="px-6 py-4 w-64">Order Summary</th>
+                  <th className="px-6 py-4">Total & Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredOrders.map((order) => {
+                  const isConfirmed = order.status === 'Confirmed';
+                  return (
+                    <tr key={order._id} className={`hover:bg-gray-50/50 transition-colors ${isConfirmed ? 'bg-green-50/30' : ''}`}>
+                      {/* Order Info */}
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-mono font-medium text-gray-500">#{order._id.slice(-6).toUpperCase()}</span>
+                          <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Payment & Delivery */}
-                    <td className="px-6 py-4 align-top">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                            {order.paymentMethod}
-                          </span>
-                          {order.transactionId && (
-                            <span className="text-xs font-mono text-gray-500" title="Transaction ID">
-                              {order.transactionId}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <span className="text-lg">🚚</span>
-                          <span>{order.deliveryOption}</span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Order Summary */}
-                    <td className="px-6 py-4 align-top">
-                      <div className="flex flex-col gap-1">
-                        {order.orderSummary.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-xs border-b border-gray-50 last:border-0 pb-1 last:pb-0">
-                            <span className="text-gray-700 line-clamp-1 mr-2" title={item.productName}>
-                              {item.productName}
-                            </span>
-                            <span className="font-medium text-gray-900 whitespace-nowrap">x{item.quantity}</span>
+                      {/* Customer Details */}
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium text-gray-900">{order.name}</span>
+                          <a href={`tel:${order.phone}`} className="text-xs text-indigo-600 hover:underline">{order.phone}</a>
+                          <div className="text-xs text-gray-500 mt-1 max-w-[150px] leading-relaxed" title={order.address}>
+                            {order.address}
                           </div>
-                        ))}
-                      </div>
-                    </td>
-
-                    {/* Total & Status */}
-                    <td className="px-6 py-4 align-top">
-                      <div className="flex flex-col gap-2">
-                        <span className="text-sm font-bold text-gray-900">BDT {order.totalAmount.toFixed(2)}</span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${isConfirmed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                          {order.status || 'Pending'}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 align-top text-right">
-                      <div className="flex flex-col gap-2 items-end">
-                        <div className="flex gap-2">
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
-                              }`}
-                            onClick={() => handleAction(order._id, 'confirm')}
-                            disabled={isConfirmed}
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${!isConfirmed
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
-                              }`}
-                            onClick={() => handleAction(order._id, 'place')}
-                            disabled={!isConfirmed}
-                          >
-                            Complete
-                          </button>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'
-                              }`}
-                            onClick={() => handleAction(order._id, 'edit')}
-                            disabled={isConfirmed}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                              }`}
-                            onClick={() => handleAction(order._id, 'cancel')}
-                            disabled={isConfirmed}
-                          >
-                            Cancel
-                          </button>
+                      </td>
+
+                      {/* Payment & Delivery */}
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                              {order.paymentMethod}
+                            </span>
+                            {order.transactionId && (
+                              <span className="text-xs font-mono text-gray-500" title="Transaction ID">
+                                {order.transactionId}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <span className="text-lg">🚚</span>
+                            <span>{order.deliveryOption}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      </td>
+
+                      {/* Order Summary */}
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col gap-1">
+                          {order.orderSummary.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-xs border-b border-gray-50 last:border-0 pb-1 last:pb-0">
+                              <span className="text-gray-700 line-clamp-1 mr-2" title={item.productName}>
+                                {item.productName}
+                              </span>
+                              <span className="font-medium text-gray-900 whitespace-nowrap">x{item.quantity}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Total & Status */}
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col gap-2">
+                          <span className="text-sm font-bold text-gray-900">BDT {order.totalAmount.toFixed(2)}</span>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${order.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
+                              order.status === 'Confirmed' ? 'bg-indigo-100 text-indigo-800' :
+                                order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-amber-100 text-amber-800'
+                            }`}>
+                            {order.status || 'Pending'}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 align-top text-right">
+                        <div className="flex flex-col gap-2 items-end">
+                          <div className="flex gap-2">
+                            <button
+                              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                                }`}
+                              onClick={() => handleAction(order._id, 'confirm')}
+                              disabled={isConfirmed}
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${!isConfirmed
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
+                                }`}
+                              onClick={() => handleAction(order._id, 'place')}
+                              disabled={!isConfirmed}
+                            >
+                              Complete
+                            </button>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'
+                                }`}
+                              onClick={() => handleAction(order._id, 'edit')}
+                              disabled={isConfirmed}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors w-20 ${isConfirmed
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                }`}
+                              onClick={() => handleAction(order._id, 'cancel')}
+                              disabled={isConfirmed}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
       {/* Edit Order Modal */}
       {editingOrder && (

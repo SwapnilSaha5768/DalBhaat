@@ -5,66 +5,57 @@ import UserManagement from './UserManagement';
 import OrderManagement from './OrderManagement/OrderManagement';
 import WishlistDetails from './Product Component/WishlistDetails';
 import CouponManagement from './CouponManagement';
+import AdminDashboard from './Dashboard/AdminDashboard';
 import { getProducts, getUsers, getOrders, getCoupons, getTotalIncome } from '../../services/api';
 
 function AdminPanel({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, onLogout }) {
     const [activeSection, setActiveSection] = useState('dashboard');
     const [expandedMenus, setExpandedMenus] = useState({ products: true });
-    const [stats, setStats] = useState({
-        totalProducts: 0,
-        totalUsers: 0,
-        totalOrders: 0,
-        activeCoupons: 0,
+    const [dashboardData, setDashboardData] = useState({
+        products: [],
+        users: [],
+        orders: [],
+        coupons: [],
         totalIncome: 0
     });
     const [loading, setLoading] = useState(true);
 
     // Fetch stats for dashboard
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchAllData = async () => {
             try {
                 setLoading(true);
 
                 // Fetch all data in parallel
                 const [productsData, usersData, ordersData, couponsData, incomeData] = await Promise.all([
                     getProducts().catch((err) => { console.error('Products error:', err); return []; }),
-                    getUsers().catch((err) => { console.error('Users error:', err); return { users: [] }; }),
-                    getOrders().catch((err) => { console.error('Orders error:', err); return { orders: [] }; }),
-                    getCoupons().catch((err) => { console.error('Coupons error:', err); return { coupons: [] }; }),
+                    getUsers().catch((err) => { console.error('Users error:', err); return []; }),
+                    getOrders().catch((err) => { console.error('Orders error:', err); return []; }),
+                    getCoupons().catch((err) => { console.error('Coupons error:', err); return []; }),
                     getTotalIncome().catch((err) => { console.error('Income error:', err); return { totalIncome: 0 }; })
                 ]);
 
-                const productsCount = Array.isArray(productsData)
-                    ? productsData.length
-                    : (productsData?.products?.length || 0);
+                // Normalize data structure if needed (handle potential object wrappers from API)
+                const products = Array.isArray(productsData) ? productsData : (productsData?.products || []);
+                const users = Array.isArray(usersData) ? usersData : (usersData?.users || []);
+                const orders = Array.isArray(ordersData) ? ordersData : (ordersData?.orders || []);
+                const coupons = Array.isArray(couponsData) ? couponsData : (couponsData?.coupons || []);
 
-                const usersCount = Array.isArray(usersData)
-                    ? usersData.length
-                    : (usersData?.users?.length || 0);
-
-                const ordersCount = Array.isArray(ordersData)
-                    ? ordersData.length
-                    : (ordersData?.orders?.length || 0);
-
-                const couponsCount = Array.isArray(couponsData)
-                    ? couponsData.length
-                    : (couponsData?.coupons?.length || 0);
-
-                setStats({
-                    totalProducts: productsCount,
-                    totalUsers: usersCount,
-                    totalOrders: ordersCount,
-                    activeCoupons: couponsCount,
+                setDashboardData({
+                    products,
+                    users,
+                    orders,
+                    coupons,
                     totalIncome: incomeData?.totalIncome || 0
                 });
             } catch (error) {
-                console.error('Error fetching stats:', error);
+                console.error('Error fetching dashboard data:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchStats();
+        fetchAllData();
     }, []);
 
     const toggleMenu = (menu) => {
@@ -87,63 +78,19 @@ function AdminPanel({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, onLogout }
         }
     };
 
-    const renderDashboard = () => (
-        <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
-            {loading ? (
-                <div className="text-center py-12 text-gray-500">Loading statistics...</div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-200 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center text-2xl">📦</div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.totalProducts}</h3>
-                            <p className="text-sm font-medium text-gray-500">Total Products</p>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-200 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center text-2xl">👥</div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.totalUsers}</h3>
-                            <p className="text-sm font-medium text-gray-500">Total Users</p>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-200 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center text-2xl">🛒</div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.totalOrders}</h3>
-                            <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-200 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-2xl">🎟️</div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.activeCoupons}</h3>
-                            <p className="text-sm font-medium text-gray-500">Active Coupons</p>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-200 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-teal-50 flex items-center justify-center text-2xl">💰</div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">BDT {stats.totalIncome.toFixed(2)}</h3>
-                            <p className="text-sm font-medium text-gray-500">Total Income</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+
+
 
     const renderContent = () => {
         switch (activeSection) {
-            case 'dashboard': return renderDashboard();
+            case 'dashboard': return <AdminDashboard data={dashboardData} loading={loading} onNavigate={setActiveSection} />;
             case 'addProduct': return <ProductForm />;
             case 'manageProducts': return <EditDeleteProduct />;
             case 'wishlist': return <WishlistDetails />;
             case 'users': return <UserManagement />;
             case 'orders': return <OrderManagement />;
             case 'coupons': return <CouponManagement />;
-            default: return renderDashboard();
+            default: return <AdminDashboard data={dashboardData} loading={loading} onNavigate={setActiveSection} />;
         }
     };
 
