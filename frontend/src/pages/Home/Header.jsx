@@ -94,7 +94,7 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                                 placeholder="Search products..."
                                 value={query}
                                 onChange={handleSearchChange}
-                                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 transition-all"
+                                className="w-full bg-white text-black border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-500 transition-all"
                             />
                             <button
                                 type="submit"
@@ -174,7 +174,7 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                                 placeholder="Search products..."
                                 value={query}
                                 onChange={handleSearchChange}
-                                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400"
+                                className="w-full bg-white text-black border border-gray-300 rounded-lg py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-500"
                             />
                             <button
                                 type="submit"

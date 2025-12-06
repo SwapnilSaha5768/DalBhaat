@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getUsers, updateUser, deleteUser } from '../services/api';
+import { getUsers, updateUser, deleteUser } from '../../services/api';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);

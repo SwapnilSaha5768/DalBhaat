@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ProductCard from "../../components/ProductCard";
+import ProductCard from "./ProductCard";
 import SkeletonProductCard from "./SkeletonProductCard";
 import { getProducts, updateCartItem, updateWishlist, getCartItems } from "../../services/api";
 
-function HomePage() {
+function HomePage({ searchQuery }) {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,9 +36,16 @@ function HomePage() {
             });
     }, []);
 
-    // Apply Category + Sorting Filtering
+    // Apply Category + Sorting + Search Filtering
     useEffect(() => {
         let updated = [...products];
+
+        // Search filter
+        if (searchQuery) {
+            updated = updated.filter((item) =>
+                item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
 
         // Category filter
         if (selectedCategory !== "All") {
@@ -56,7 +63,7 @@ function HomePage() {
 
         setFilteredProducts(updated);
         setCurrentPage(1);
-    }, [selectedCategory, sortOption, products]);
+    }, [selectedCategory, sortOption, products, searchQuery]);
 
     // Pagination logic
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -95,7 +102,7 @@ function HomePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Products</h1>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                     {Array.from({ length: 8 }).map((_, index) => (
@@ -107,15 +114,15 @@ function HomePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-8 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="min-h-screen bg-gray-50 pt-4 pb-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Products</h1>
 
                 {/* FILTER BAR */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mb-8 bg-white/80 backdrop-blur-md rounded-xl shadow-sm sticky top-20 z-40 border border-gray-100 transition-all duration-300">
+                <div className="flex flex-row items-center justify-between gap-4 p-4 mb-8 bg-white/80 backdrop-blur-md rounded-xl shadow-sm sticky top-20 z-40 border border-gray-100 transition-all duration-300">
 
                     {/* CATEGORY FILTER */}
-                    <div className="relative w-full sm:w-64">
+                    <div className="relative flex-1 sm:flex-none sm:w-64">
                         <select
                             value={selectedCategory}
                             onChange={(e) => {

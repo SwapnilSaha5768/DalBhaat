@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getProducts, updateProduct, deleteProduct } from '../services/api';
+import { getProducts, updateProduct, deleteProduct } from '../../../services/api';
 
 function EditDeleteProduct() {
   const [products, setProducts] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAllOrders, updateOrderDetails, cancelOrder, completeOrder, updateOrderStatus } from '../../services/api';
-import EditOrderModal from '../EditOrderModal/EditOrderModal';
+import { getAllOrders, updateOrderDetails, cancelOrder, completeOrder, updateOrderStatus } from '../../../services/api';
+import EditOrderModal from './EditOrderModal';
 
 function OrderManagement() {
   const [orders, setOrders] = useState([]);

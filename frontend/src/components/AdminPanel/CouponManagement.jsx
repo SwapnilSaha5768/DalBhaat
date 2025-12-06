@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../services/api';
+import { getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../../services/api';
 
 function CouponManagement() {
   const [coupons, setCoupons] = useState([]);

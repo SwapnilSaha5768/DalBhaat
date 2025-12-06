@@ -3,18 +3,18 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import HomePage from './pages/Home/HomePage';
 import CartPage from './pages/CartPage/CartPage';
 import LoginPage from './pages/Login/Login';
-import OrderManagement from './components/OrderManagement/OrderManagement';
+import OrderManagement from './components/AdminPanel/OrderManagement/OrderManagement';
 import RegistrationPage from './pages/Registration/Registration';
 import AdminPanel from './components/AdminPanel/AdminPanel';
 import Header from './pages/Home/Header';
-import Footer from './components/Footer/Footer';
+import Footer from './pages/Home/Footer/Footer';
 import Checkout from './pages/CheckOut/Checkout';
-import FAQ from './pages/faq/FAQ';
+import FAQ from './pages/Home/Footer/FAQ';
 import Contact from './pages/Contact/Contact';
 import OrderConfirmation from './pages/CheckOut/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
 import ProfilePage from './pages/Profile/Profile';
-import ProtectedAdminRoute from './components/ProtectedAdminRoute';
+import ProtectedAdminRoute from './components/AdminPanel/ProtectedAdminRoute';
 import { clearCart } from './services/api';
 
 

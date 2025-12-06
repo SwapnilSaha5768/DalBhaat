@@ -57,7 +57,6 @@ function CheckoutPage() {
 
           if (userProfile.addresses && userProfile.addresses.length > 0) {
             setSavedAddresses(userProfile.addresses);
-            // Default to the default address if it exists, otherwise the first one
             const defaultIndex = userProfile.addresses.findIndex(addr => addr.isDefault);
             if (defaultIndex !== -1) {
               handleAddressSelect(defaultIndex, userProfile.addresses);

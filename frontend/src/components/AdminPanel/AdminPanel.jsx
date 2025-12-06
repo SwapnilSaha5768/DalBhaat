@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ProductForm from './Product Component/ProductForm';
-import EditDeleteProduct from '../EditDeleteProduct';
-import UserManagement from '../UserManagement';
-import OrderManagement from '../OrderManagement/OrderManagement';
+import EditDeleteProduct from './Product Component/EditDeleteProduct';
+import UserManagement from './UserManagement';
+import OrderManagement from './OrderManagement/OrderManagement';
 import WishlistDetails from './Product Component/WishlistDetails';
-import CouponManagement from '../CouponManagement';
+import CouponManagement from './CouponManagement';
 import { getProducts, getUsers, getOrders, getCoupons, getTotalIncome } from '../../services/api';
 
 function AdminPanel({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, onLogout }) {
