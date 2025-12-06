@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { placeOrder, reduceStock, validateCoupon, clearCart, getUserProfile } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import './CheckoutPage.css';
 
 function CheckoutPage() {
+  const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
@@ -97,9 +99,13 @@ function CheckoutPage() {
 
 
 
+
+
+  // ... (rest of the component)
+
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
-      alert('Please enter a valid coupon code');
+      showToast('Please enter a valid coupon code', 'error');
       return;
     }
 
@@ -107,24 +113,25 @@ function CheckoutPage() {
       const response = await validateCoupon(couponCode);
       setDiscount(response.discount);
       calculateTotal(cartItems, deliveryCharge, response.discount);
-      alert(`Coupon applied! Discount: BDT ${response.discount}`);
+      showToast(`Coupon applied! Discount: BDT ${response.discount}`, 'success');
     } catch (error) {
       console.error('Error validating coupon:', error);
-      alert('Invalid coupon code');
+      showToast('Invalid coupon code', 'error');
     }
   };
 
   const handlePlaceOrder = async () => {
     if (!billingInfo.name || !billingInfo.phone || !billingInfo.address) {
-      alert('Please fill out all billing details');
+      showToast('Please fill out all billing details', 'error');
       return;
     }
     if (paymentMethod === 'bkash' && !transactionId.trim()) {
-      alert('Please enter the bKash Transaction ID');
+      showToast('Please enter the bKash Transaction ID', 'error');
       return;
     }
 
     const orderData = {
+      // ... (order data construction)
       name: billingInfo.name,
       phone: billingInfo.phone,
       address: billingInfo.address,
@@ -151,7 +158,7 @@ function CheckoutPage() {
       // Clear the cart
       await clearCart();
 
-      alert(response.message);
+      showToast(response.message, 'success');
 
       // Redirect to confirmation page
       navigate('/order-confirmation', {
@@ -164,7 +171,7 @@ function CheckoutPage() {
       });
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place the order. Please try again.');
+      showToast('Failed to place the order. Please try again.', 'error');
     }
   };
 

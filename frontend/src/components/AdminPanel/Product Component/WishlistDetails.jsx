@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { getWishlist, deleteWishlistItem } from '../../../services/api';
+import { useToast } from '../../../context/ToastContext';
 
 function WishlistDetails() {
     const [wishlist, setWishlist] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchWishlist = async () => {
@@ -12,13 +14,14 @@ function WishlistDetails() {
                 setWishlist(wishlistData);
             } catch (error) {
                 console.error('Error fetching wishlist:', error);
+                showToast('Failed to fetch wishlist.', 'error');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchWishlist();
-    }, []);
+    }, [showToast]);
 
     const handleDelete = async (productName) => {
         if (!window.confirm(`Are you sure you want to delete '${productName}' from the wishlist?`)) {
@@ -28,11 +31,10 @@ function WishlistDetails() {
         try {
             await deleteWishlistItem(productName);
             setWishlist((prevWishlist) => prevWishlist.filter((item) => item.name !== productName));
-            // Optional: Use a toast notification instead of alert
-            // alert(`Wishlist item '${productName}' deleted successfully.`);
+            showToast(`Wishlist item '${productName}' deleted successfully.`, 'success');
         } catch (error) {
             console.error('Error deleting wishlist item:', error);
-            alert('Failed to delete the wishlist item.');
+            showToast('Failed to delete the wishlist item.', 'error');
         }
     };
 

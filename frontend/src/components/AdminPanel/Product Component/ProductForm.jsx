@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { addProducts } from '../../../services/api';
+import { useToast } from '../../../context/ToastContext';
 
 function ProductForm() {
     const [name, setName] = useState('');
@@ -8,6 +9,7 @@ function ProductForm() {
     const [description, setDescription] = useState('');
     const [image, setImage] = useState('');
     const [category, setCategory] = useState('Others');
+    const { showToast } = useToast();
 
     const categories = ['Vegetables', 'Fruits', 'Spices', 'Rice', 'Others'];
 
@@ -15,7 +17,7 @@ function ProductForm() {
         e.preventDefault();
         try {
             await addProducts(name, price, quantity, description, image, category);
-            alert('Product added successfully');
+            showToast('Product added successfully', 'success');
             // Reset form
             setName('');
             setPrice('');
@@ -25,6 +27,7 @@ function ProductForm() {
             setCategory('Others');
         } catch (error) {
             console.error('Error adding product', error);
+            showToast('Failed to add product. Please try again.', 'error');
         }
     };
 

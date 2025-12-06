@@ -16,6 +16,7 @@ import OrderHistory from './pages/OrderHistory/OrderHistory';
 import ProfilePage from './pages/Profile/Profile';
 import ProtectedAdminRoute from './components/AdminPanel/ProtectedAdminRoute';
 import { clearCart } from './services/api';
+import { ToastProvider } from './context/ToastContext';
 
 
 
@@ -114,10 +115,15 @@ function AppContent() {
   );
 }
 
+
+
+
 function App() {
   return (
     <Router>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </Router>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 function CouponManagement() {
   const [coupons, setCoupons] = useState([]);
@@ -11,6 +12,7 @@ function CouponManagement() {
   });
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [activeView, setActiveView] = useState('create');
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchCoupons();
@@ -28,13 +30,13 @@ function CouponManagement() {
   const handleCreateCoupon = async () => {
     try {
       await createCoupon(newCoupon);
-      alert('Coupon created successfully!');
+      showToast('Coupon created successfully!', 'success');
       fetchCoupons();
       setNewCoupon({ code: '', discount: 0, expiresAt: '', usageLimit: null });
       setActiveView('existing');
     } catch (error) {
       console.error('Error creating coupon:', error);
-      alert('Failed to create coupon');
+      showToast('Failed to create coupon', 'error');
     }
   };
 
@@ -48,12 +50,12 @@ function CouponManagement() {
       };
 
       await updateCoupon(editingCoupon._id, updatedData);
-      alert('Coupon updated successfully!');
+      showToast('Coupon updated successfully!', 'success');
       fetchCoupons();
       setEditingCoupon(null);
     } catch (error) {
       console.error('Failed to update coupon:', error);
-      alert('Failed to update coupon. Please try again.');
+      showToast('Failed to update coupon. Please try again.', 'error');
     }
   };
 
@@ -61,11 +63,11 @@ function CouponManagement() {
     if (!window.confirm('Are you sure you want to delete this coupon?')) return;
     try {
       await deleteCoupon(id);
-      alert('Coupon deleted successfully!');
+      showToast('Coupon deleted successfully!', 'success');
       fetchCoupons();
     } catch (error) {
       console.error('Error deleting coupon:', error);
-      alert('Failed to delete coupon');
+      showToast('Failed to delete coupon', 'error');
     }
   };
 

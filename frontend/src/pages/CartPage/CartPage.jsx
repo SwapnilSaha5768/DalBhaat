@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCartItems, updateCartItem, removeCartItem, getProductStock } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
     const [total, setTotal] = useState(0);
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchCartItems = async () => {
@@ -40,7 +42,7 @@ function CartPage() {
             const item = cartItems.find((item) => item.name === name);
 
             if (newQuantity > item.maxQuantity) {
-                alert(`Only ${item.maxQuantity} items available in stock.`);
+                showToast(`Only ${item.maxQuantity} items available in stock.`, 'error');
                 return;
             }
 

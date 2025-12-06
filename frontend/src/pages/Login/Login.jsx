@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { loginUser } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 
 function Login({ onLogin }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [slideOut, setSlideOut] = useState(false);
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -14,7 +16,7 @@ function Login({ onLogin }) {
             const response = await loginUser(email, password);
 
             if (response && response.success) {
-                alert('Login successful');
+                showToast('Login successful', 'success');
                 localStorage.setItem('authToken', response.token);
                 localStorage.setItem('isAdmin', response.isAdmin || false);
                 localStorage.setItem('userId', response.userId);
@@ -25,12 +27,13 @@ function Login({ onLogin }) {
 
                 navigate('/');
             } else {
-                alert(response.message || 'Login failed: Incorrect email or password');
+                showToast(response.message || 'Login failed: Incorrect email or password', 'error');
             }
         } catch (error) {
             console.error('Error logging in:', error.response?.data || error.message);
-            alert(
-                error.response?.data?.message || 'Login failed: An error occurred. Please try again.'
+            showToast(
+                error.response?.data?.message || 'Login failed: An error occurred. Please try again.',
+                'error'
             );
         }
     };

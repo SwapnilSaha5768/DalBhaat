@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAllOrders, updateOrderDetails, cancelOrder, completeOrder, updateOrderStatus } from '../../../services/api';
 import EditOrderModal from './EditOrderModal';
+import { useToast } from '../../../context/ToastContext';
 
 function OrderManagement() {
   const [orders, setOrders] = useState([]);
@@ -11,14 +12,15 @@ function OrderManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrder] = useState(null);
   const [estimatedDate, setEstimatedDate] = useState('');
+  const { showToast } = useToast();
 
   const handleCopyToClipboard = () => {
     const emailContent = document.getElementById('emailContent').innerText;
     navigator.clipboard.writeText(emailContent).then(() => {
-      alert('Email content copied to clipboard!');
+      showToast('Email content copied to clipboard!', 'success');
     }).catch(err => {
       console.error('Error copying text: ', err);
-      alert('Failed to copy email content. Please try again.');
+      showToast('Failed to copy email content. Please try again.', 'error');
     });
   };
 
@@ -31,14 +33,14 @@ function OrderManagement() {
         setFilteredOrders(activeOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
-        alert('Failed to load orders. Please try again later.');
+        showToast('Failed to load orders. Please try again later.', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [showToast]);
 
   const handleAction = async (orderId, action) => {
     try {
@@ -46,7 +48,7 @@ function OrderManagement() {
         case 'cancel':
           if (window.confirm('Are you sure you want to cancel this order? Stock will be restored.')) {
             await cancelOrder(orderId);
-            alert('Order cancelled and stock restored successfully.');
+            showToast('Order cancelled and stock restored successfully.', 'success');
           }
           break;
         case 'edit':
@@ -55,16 +57,16 @@ function OrderManagement() {
           break;
         case 'confirm':
           await updateOrderStatus(orderId, 'Confirmed');
-          alert('Order confirmed.');
+          showToast('Order confirmed.', 'success');
           break;
         case 'place':
           if (window.confirm('Mark this order as completed? It will be removed from the list and added to income.')) {
             await completeOrder(orderId);
-            alert('Order completed successfully.');
+            showToast('Order completed successfully.', 'success');
           }
           break;
         default:
-          alert('Invalid action.');
+          showToast('Invalid action.', 'error');
       }
       const refreshedOrders = await getAllOrders();
       const activeOrders = refreshedOrders.filter(order => order.status !== 'Completed' && order.status !== 'Cancelled');
@@ -72,7 +74,7 @@ function OrderManagement() {
       setFilteredOrders(activeOrders);
     } catch (error) {
       console.error(`Error performing ${action}:`, error);
-      alert(`Failed to ${action} order. Please try again.`);
+      showToast(`Failed to ${action} order. Please try again.`, 'error');
     }
   };
 
@@ -269,7 +271,7 @@ function OrderManagement() {
           onClose={() => setEditingOrder(null)}
           onSave={async (updatedOrder) => {
             await updateOrderDetails(updatedOrder._id, updatedOrder);
-            alert('Order updated successfully!');
+            showToast('Order updated successfully!', 'success');
             setEditingOrder(null);
             const refreshedOrders = await getAllOrders();
             setOrders(refreshedOrders);
@@ -279,58 +281,60 @@ function OrderManagement() {
       )}
 
       {/* Place Order Modal (Email Preview) */}
-      {isModalOpen && modalOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Order Confirmation Email</h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-              >
-                &times;
-              </button>
-            </div>
+      {
+        isModalOpen && modalOrder && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 animate-in fade-in zoom-in duration-200">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Order Confirmation Email</h2>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                >
+                  &times;
+                </button>
+              </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4 overflow-auto max-h-[60vh]">
-              <pre id="emailContent" className="whitespace-pre-wrap font-mono text-sm text-gray-700">
-                Dear Customer,{"\n\n"}
-                Your order #{modalOrder._id} has been confirmed. The details are as follows:
-                {"\n\n"}
-                Order ID: {modalOrder._id}{"\n"}
-                Customer Name: {modalOrder.name}{"\n"}
-                Phone: {modalOrder.phone}{"\n"}
-                Address: {modalOrder.address}{"\n"}
-                Delivery Option: {modalOrder.deliveryOption}{"\n"}
-                Payment Method: {modalOrder.paymentMethod}{"\n"}
-                Total Amount: BDT {modalOrder.totalAmount.toFixed(2)}{"\n"}
-                Order Summary: {modalOrder.orderSummary.map(item => `${item.productName} (x${item.quantity})`).join(", ")}{"\n\n"}
-                Estimated Delivery Date:{" "}
-                <input
-                  type="date"
-                  value={estimatedDate}
-                  onChange={handleDateChange}
-                  required
-                  className="ml-2 p-1 border border-gray-300 rounded text-sm"
-                />{"\n\n"}
-                Thank you for shopping with us!{"\n\n"}
-                Best regards,{"\n\n"}
-                DalBhaat.com
-              </pre>
-            </div>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4 overflow-auto max-h-[60vh]">
+                <pre id="emailContent" className="whitespace-pre-wrap font-mono text-sm text-gray-700">
+                  Dear Customer,{"\n\n"}
+                  Your order #{modalOrder._id} has been confirmed. The details are as follows:
+                  {"\n\n"}
+                  Order ID: {modalOrder._id}{"\n"}
+                  Customer Name: {modalOrder.name}{"\n"}
+                  Phone: {modalOrder.phone}{"\n"}
+                  Address: {modalOrder.address}{"\n"}
+                  Delivery Option: {modalOrder.deliveryOption}{"\n"}
+                  Payment Method: {modalOrder.paymentMethod}{"\n"}
+                  Total Amount: BDT {modalOrder.totalAmount.toFixed(2)}{"\n"}
+                  Order Summary: {modalOrder.orderSummary.map(item => `${item.productName} (x${item.quantity})`).join(", ")}{"\n\n"}
+                  Estimated Delivery Date:{" "}
+                  <input
+                    type="date"
+                    value={estimatedDate}
+                    onChange={handleDateChange}
+                    required
+                    className="ml-2 p-1 border border-gray-300 rounded text-sm"
+                  />{"\n\n"}
+                  Thank you for shopping with us!{"\n\n"}
+                  Best regards,{"\n\n"}
+                  DalBhaat.com
+                </pre>
+              </div>
 
-            <div className="flex justify-end">
-              <button
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-                onClick={() => handleCopyToClipboard()}
-              >
-                Copy to Clipboard
-              </button>
+              <div className="flex justify-end">
+                <button
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                  onClick={() => handleCopyToClipboard()}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
 

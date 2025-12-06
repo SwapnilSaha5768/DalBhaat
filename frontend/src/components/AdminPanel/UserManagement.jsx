@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { getUsers, updateUser, deleteUser } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [error, setError] = useState(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
+    // ... (fetchUsers logic unchanged)
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
@@ -36,10 +39,10 @@ function UserManagement() {
           user._id === id ? { ...user, isAdmin: newStatus } : user
         )
       );
-      // alert(`User ${newStatus ? 'granted' : 'removed from'} admin status.`);
+      showToast(`User ${newStatus ? 'granted' : 'removed from'} admin status.`, 'success');
     } catch (err) {
       console.error('Error updating user admin status:', err);
-      alert('Failed to update user admin status.');
+      showToast('Failed to update user admin status.', 'error');
     }
   };
 
@@ -51,10 +54,10 @@ function UserManagement() {
       setFilteredUsers((prevUsers) =>
         prevUsers.filter((user) => user._id !== id)
       );
-      alert('User deleted successfully.');
+      showToast('User deleted successfully.', 'success');
     } catch (err) {
       console.error('Error deleting user:', err);
-      alert('Failed to delete user.');
+      showToast('Failed to delete user.', 'error');
     }
   };
 

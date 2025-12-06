@@ -2,11 +2,15 @@ import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import SkeletonProductCard from "./SkeletonProductCard";
 import { getProducts, updateCartItem, updateWishlist, getCartItems } from "../../services/api";
+import { useToast } from '../../context/ToastContext';
 
 function HomePage({ searchQuery }) {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+
+    // ... (rest of state)
 
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [sortOption, setSortOption] = useState(""); // price-asc, price-desc, name-asc
@@ -83,20 +87,20 @@ function HomePage({ searchQuery }) {
             }
 
             await updateCartItem(product.name, product.price, product.image, newQuantity);
-            // Optional: Add toast notification here
+            showToast(`${product.name} added to cart!`, 'success');
         } catch (error) {
             console.error('Error adding product to cart:', error);
-            alert('Failed to add product to cart.');
+            showToast('Failed to add product to cart.', 'error');
         }
     };
 
     const handleAddToWishlist = async (productName) => {
         try {
             await updateWishlist(productName);
-            alert(`${productName} added to wishlist!`);
+            showToast(`${productName} added to wishlist!`, 'success');
         } catch (error) {
             console.error('Error adding to wishlist:', error);
-            alert('Failed to add to wishlist.');
+            showToast('Failed to add to wishlist.', 'error');
         }
     };
 

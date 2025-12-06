@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { getProducts, updateProduct, deleteProduct } from '../../../services/api';
+import { useToast } from '../../../context/ToastContext';
 
 function EditDeleteProduct() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -23,7 +25,7 @@ function EditDeleteProduct() {
   const handleUpdate = async (id, updatedFields) => {
     try {
       await updateProduct(id, updatedFields);
-      alert('Product updated successfully');
+      showToast('Product updated successfully', 'success');
 
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
@@ -38,7 +40,7 @@ function EditDeleteProduct() {
       );
     } catch (error) {
       console.error('Error updating product:', error);
-      alert('Failed to update product');
+      showToast('Failed to update product', 'error');
     }
   };
 
@@ -46,7 +48,7 @@ function EditDeleteProduct() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
       await deleteProduct(id);
-      alert('Product deleted successfully');
+      showToast('Product deleted successfully', 'success');
 
       setProducts((prevProducts) => prevProducts.filter((product) => product._id !== id));
       setFilteredProducts((prevProducts) =>
@@ -54,7 +56,7 @@ function EditDeleteProduct() {
       );
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Failed to delete product');
+      showToast('Failed to delete product', 'error');
     }
   };
 
