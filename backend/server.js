@@ -22,9 +22,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
-    // Check/Insert default admin user after connection
     createDefaultAdmin();
-    // Check/Insert default products
     insertDefaultProducts();
   })
   .catch((err) => console.log('Error:', err));
@@ -50,9 +48,7 @@ const insertDefaultProducts = async () => {
       ];
 
       await Product.insertMany(defaultProducts);
-      console.log('Default products inserted.');
     } else {
-      console.log('Products already exist in the database.');
     }
   } catch (error) {
     console.error('Error inserting default products:', error);
@@ -71,8 +67,6 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/income', incomeRoutes);
 
 
-// Root API route
-// Root API route
 app.get('/api', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
   res.json({
@@ -83,30 +77,25 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Start the server
-// Export the app for Vercel
+
 module.exports = app;
 
-// Start the server only if run directly
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
-
-// Function to create a default admin user
 async function createDefaultAdmin() {
   try {
-    // Delete existing admin user if it exists (to fix password issues)
     await User.deleteOne({ email: 'admin@example.com' });
 
     const adminUser = new User({
       name: 'Admin',
       email: 'admin@example.com',
-      password: 'admin123', // Plain password - will be hashed by User model pre-save hook
+      password: 'admin123',
       isAdmin: true,
     });
     await adminUser.save();
-    console.log('Default admin user created: email=admin@example.com, password=admin123');
+    console.log('Default admin user created.');
   } catch (error) {
     console.error('Error creating default admin user:', error);
   }

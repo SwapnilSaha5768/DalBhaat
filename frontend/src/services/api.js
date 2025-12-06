@@ -38,7 +38,7 @@ export const getProductStock = async (productName) => {
     const response = await axios.get(`${API_BASE_URL}/products/stock`, {
       params: { name: productName },
     });
-    console.log('Stock fetched:', response.data.quantity); // Debugging line
+
     return response.data.quantity; // Ensure quantity is returned
   } catch (error) {
     console.error('Error fetching product stock:', error);
@@ -290,11 +290,11 @@ export const getUserOrders = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) throw new Error('No token found');
 
-    console.log('getUserOrders - Calling API for authenticated user');
+
     const response = await axios.get(`${API_BASE_URL}/orders/my-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log('getUserOrders - Response:', response.data);
+
     return response.data;
   } catch (error) {
     console.error('getUserOrders - Error details:', {

@@ -6,7 +6,7 @@ const OrderSchema = new mongoose.Schema({
   address: { type: String, required: true },
   deliveryOption: { type: String, required: true },
   paymentMethod: { type: String, required: true },
-  transactionId: { type: String, required: false }, // Optional for non-bKash payments
+  transactionId: { type: String, required: false },
   orderSummary: [
     {
       productName: { type: String, required: true },
@@ -14,8 +14,8 @@ const OrderSchema = new mongoose.Schema({
     },
   ],
   totalAmount: { type: Number, required: true },
-  userId: { type: String, required: false }, // Link order to a user
-  status: { type: String, default: 'Pending' }, // Pending, Confirmed, Cancelled, Completed
+  userId: { type: String, required: false },
+  status: { type: String, default: 'Pending' },
   createdAt: { type: Date, default: Date.now },
 });
 

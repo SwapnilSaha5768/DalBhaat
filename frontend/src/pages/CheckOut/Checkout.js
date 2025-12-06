@@ -146,8 +146,6 @@ function CheckoutPage() {
       userId: localStorage.getItem('userId'), // Include userId
     };
 
-    console.log('Placing order with data:', orderData); // Debug log
-
     try {
       // Place the order
       const response = await placeOrder(orderData);

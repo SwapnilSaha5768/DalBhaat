@@ -49,7 +49,7 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
 
     const handleLogout = () => {
         onLogout();
-        // alert('You have been logged out.');
+
         navigate('/login');
         setIsMenuOpen(false);
     };

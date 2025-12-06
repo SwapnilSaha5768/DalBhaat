@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   bio: { type: String, default: '' },
   phone: { type: String, default: '' },
-  address: { type: String, default: '' }, // Deprecated but kept for backward compatibility
+  address: { type: String, default: '' },
   addresses: [{
     street: { type: String, required: true },
     city: { type: String, default: '' },
@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
 });
 
-// Hash password before saving
+
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);

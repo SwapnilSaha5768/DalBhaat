@@ -271,7 +271,7 @@ const AdminDashboard = ({ data, loading, onNavigate }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Sales Analytics Chart */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
                         <div>
                             <h3 className="text-lg font-bold text-gray-900">Sales Analytics</h3>
                             <p className="text-sm text-gray-500">Income over time</p>
@@ -279,7 +279,7 @@ const AdminDashboard = ({ data, loading, onNavigate }) => {
                         <select
                             value={timeRange}
                             onChange={(e) => setTimeRange(e.target.value)}
-                            className="bg-gray-50 border-none text-sm font-medium text-gray-500 rounded-lg px-3 py-2 cursor-pointer outline-none hover:bg-gray-100 transition-colors"
+                            className="bg-gray-50 border-none text-sm font-medium text-gray-500 rounded-lg px-3 py-2 cursor-pointer outline-none hover:bg-gray-100 transition-colors w-full sm:w-auto"
                         >
                             <option value="7d">Last 7 Days</option>
                             <option value="30d">Last 30 Days</option>
@@ -325,9 +325,9 @@ const AdminDashboard = ({ data, loading, onNavigate }) => {
                         </select>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
                         {/* Left Side: Stats */}
-                        <div className="flex-1 space-y-6">
+                        <div className="flex-1 space-y-6 w-full">
                             <div>
                                 <span className="text-4xl font-bold text-gray-900 block">
                                     {orderStatusData[0]?.name === 'No Data' ? 0 : orderStatusData.reduce((acc, curr) => acc + curr.value, 0)}

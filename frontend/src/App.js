@@ -10,7 +10,7 @@ import Header from './pages/Home/Header';
 import Footer from './pages/Home/Footer/Footer';
 import Checkout from './pages/CheckOut/Checkout';
 import FAQ from './pages/Home/Footer/FAQ';
-import Contact from './pages/Contact/Contact';
+import Contact from './pages/Home/Contact';
 import OrderConfirmation from './pages/CheckOut/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
 import ProfilePage from './pages/Profile/Profile';
