@@ -79,13 +79,10 @@ router.post('/login', async (req, res) => {
 // Get user profile
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    console.log('GET /profile request for user:', req.user.id);
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
-      console.log('User not found for id:', req.user.id);
       return res.status(404).json({ message: 'User not found' });
     }
-    console.log('User found:', user.email);
     res.json(user);
   } catch (err) {
     console.error('Error fetching profile:', err);

@@ -547,7 +547,7 @@ const Profile = () => {
                                                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                                     </div>
                                                 </div>
-                                                <p className="font-bold text-gray-900">BDT {(item.price * item.quantity).toFixed(2)}</p>
+                                                <p className="font-bold text-gray-900">BDT {item.price ? (item.price * item.quantity).toFixed(2) : 'N/A'}</p>
                                             </div>
                                         ))}
                                     </div>

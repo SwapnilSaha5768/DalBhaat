@@ -141,6 +141,7 @@ function CheckoutPage() {
       orderSummary: cartItems.map((item) => ({
         productName: item.name,
         quantity: item.quantity,
+        price: item.price,
       })),
       totalAmount: finalTotal,
       userId: localStorage.getItem('userId'), // Include userId

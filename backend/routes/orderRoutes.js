@@ -8,7 +8,7 @@ router.post('/create', async (req, res) => {
   try {
     const { name, phone, address, deliveryOption, paymentMethod, transactionId, orderSummary, totalAmount, userId } = req.body;
 
-    console.log('Creating order. userId:', userId); // Debug log
+    // console.log('Creating order. userId:', userId); // Debug log
 
     if (!name || !phone || !address || !deliveryOption || !paymentMethod || !orderSummary || !totalAmount) {
       return res.status(400).json({ error: 'All required fields must be provided.' });
@@ -27,7 +27,7 @@ router.post('/create', async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    console.log('Order saved:', savedOrder._id); // Debug log
+    // console.log('Order saved:', savedOrder._id); // Debug log
     res.status(201).json({ message: 'Order placed successfully!', orderId: savedOrder._id });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -41,7 +41,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.get('/my-orders', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log('Fetching orders for authenticated user:', userId);
+    // console.log('Fetching orders for authenticated user:', userId);
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
@@ -54,9 +54,9 @@ router.get('/my-orders', authMiddleware, async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log('Fetching orders for userId:', userId); // Debug log
+    // console.log('Fetching orders for userId:', userId); // Debug log
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-    console.log('Found orders:', orders.length); // Debug log
+    // console.log('Found orders:', orders.length); // Debug log
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching user orders:', error);
