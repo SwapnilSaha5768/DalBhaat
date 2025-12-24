@@ -26,10 +26,10 @@ function RegistrationPage() {
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-5">
-            <div className="flex w-full max-w-[750px] h-[480px] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.8s_ease-out]">
+            <div className="flex flex-col md:flex-row w-full max-w-[750px] min-h-[550px] md:h-[480px] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.8s_ease-out]">
 
                 {/* Left Panel (Form) */}
-                <div className={`flex-1 bg-white flex flex-col justify-center p-10 ${slideOut ? 'animate-panelSlideRight' : 'animate-panelEnterLeft'}`}>
+                <div className={`flex-1 bg-white flex flex-col justify-center p-10 ${slideOut ? 'animate-panelSlideRight' : 'animate-panelEnterLeft'} w-full md:w-1/2 order-1 md:order-1`}>
                     <h2 className="text-[2rem] font-bold text-[#333] mb-[25px] text-left">Create Account</h2>
                     <form onSubmit={handleRegister} className="flex flex-col gap-[15px]">
                         <div className="flex flex-col gap-[6px]">
@@ -79,7 +79,7 @@ function RegistrationPage() {
                 </div>
 
                 {/* Right Panel (Dark) */}
-                <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-panelSlideLeft' : 'animate-panelEnterRight'}`}>
+                <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-panelSlideLeft' : 'animate-panelEnterRight'} w-full md:w-1/2 order-2 md:order-2`}>
                     <h2 className="text-[2.2rem] font-bold mb-[15px] text-white/80 leading-[1.2]">Join Us</h2>
                     <p className="text-[0.95rem] leading-[1.5] text-white/80 mb-[30px]">
                         Create an account to unlock seamless shopping.

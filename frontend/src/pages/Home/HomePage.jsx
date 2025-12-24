@@ -108,7 +108,7 @@ function HomePage({ searchQuery }) {
         return (
             <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Products</h1>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                     {Array.from({ length: 8 }).map((_, index) => (
                         <SkeletonProductCard key={index} />
                     ))}
@@ -123,10 +123,10 @@ function HomePage({ searchQuery }) {
                 <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Products</h1>
 
                 {/* FILTER BAR */}
-                <div className="flex flex-row items-center justify-between gap-4 p-4 mb-8 bg-white/80 backdrop-blur-md rounded-xl shadow-sm sticky top-20 z-40 border border-gray-100 transition-all duration-300">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mb-8 bg-white/80 backdrop-blur-md rounded-xl shadow-sm sticky top-20 z-40 border border-gray-100 transition-all duration-300">
 
                     {/* CATEGORY FILTER */}
-                    <div className="relative flex-1 sm:flex-none sm:w-64">
+                    <div className="relative w-full sm:flex-1 sm:w-64">
                         <select
                             value={selectedCategory}
                             onChange={(e) => {
@@ -150,7 +150,7 @@ function HomePage({ searchQuery }) {
 
                     {/* SORT BUTTON */}
                     <button
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${sortOption.startsWith("price")
+                        className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 w-full sm:w-auto ${sortOption.startsWith("price")
                             ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
                             : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                             }`}
@@ -168,7 +168,7 @@ function HomePage({ searchQuery }) {
                 </div>
 
                 {/* PRODUCT GRID */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {currentItems.length === 0 ? (
                         <div className="col-span-full text-center py-12">
                             <p className="text-xl text-gray-500">No products found.</p>
