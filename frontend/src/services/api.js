@@ -1,12 +1,19 @@
 import axios from 'axios';
 
+// Configure axios defaults to send cookies with every request
+axios.defaults.withCredentials = true;
+
 const API_BASE_URL = process.env.NODE_ENV === 'production'
   ? '/api'
-  : `http://${window.location.hostname}:5000/api`;
+  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? `http://${window.location.hostname}:5000/api`
+    : '/api');
 
 export const getProducts = async (name, price, quantity, description, image) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products`, { name, price, quantity, description, image });
+    const response = await axios.get(`${API_BASE_URL}/products`, {
+      params: { name, price, quantity, description, image }
+    });
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -80,6 +87,26 @@ export const deleteProduct = async (id) => {
   }
 };
 
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/users/forgot-password`, { email });
+    return response.data;
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (token, password) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/users/reset-password/${token}`, { password });
+    return response.data;
+  } catch (error) {
+    console.error('Reset password error:', error);
+    throw error;
+  }
+};
 
 export const registerUser = async (name, email, password) => {
   try {
@@ -287,13 +314,7 @@ export const getAllOrders = async () => {
 
 export const getUserOrders = async () => {
   try {
-    const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('No token found');
-
-
-    const response = await axios.get(`${API_BASE_URL}/orders/my-orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(`${API_BASE_URL}/orders/my-orders`);
 
     return response.data;
   } catch (error) {
@@ -422,12 +443,7 @@ export const reduceCouponUsage = async (couponCode) => {
 
 export const getUserProfile = async () => {
   try {
-    const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('No token found');
-
-    const response = await axios.get(`${API_BASE_URL}/users/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(`${API_BASE_URL}/users/profile`);
     return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -437,15 +453,21 @@ export const getUserProfile = async () => {
 
 export const updateUserProfile = async (profileData) => {
   try {
-    const token = localStorage.getItem('authToken');
-    if (!token) throw new Error('No token found');
-
-    const response = await axios.put(`${API_BASE_URL}/users/profile`, profileData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.put(`${API_BASE_URL}/users/profile`, profileData);
     return response.data;
   } catch (error) {
     console.error('Error updating user profile:', error);
+    throw error;
+  }
+};
+
+export const updateUserPassword = async (passwordData) => {
+  try {
+    // Cookie is sent automatically
+    const response = await axios.put(`${API_BASE_URL}/users/profile/password`, passwordData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating password:', error);
     throw error;
   }
 };

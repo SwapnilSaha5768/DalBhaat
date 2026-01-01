@@ -1,30 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { addProducts } from '../../../services/api';
 import { useToast } from '../../../context/ToastContext';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const productSchema = z.object({
+    name: z.string().min(1, "Product name is required"),
+    price: z.preprocess((val) => Number(val), z.number().min(0, "Price must be a positive number")),
+    quantity: z.preprocess((val) => Number(val), z.number().int().min(0, "Quantity must be a non-negative integer")),
+    description: z.string().optional(),
+    image: z.string().url("Invalid image URL"),
+    category: z.string().min(1, "Category is required")
+});
 
 function ProductForm() {
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [description, setDescription] = useState('');
-    const [image, setImage] = useState('');
-    const [category, setCategory] = useState('Others');
     const { showToast } = useToast();
-
     const categories = ['Vegetables', 'Fruits', 'Spices', 'Rice', 'Others'];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
+        resolver: zodResolver(productSchema),
+        defaultValues: {
+            name: '',
+            price: '',
+            quantity: '',
+            description: '',
+            image: '',
+            category: 'Others'
+        }
+    });
+
+    const watchedImage = watch('image');
+
+    const onSubmit = async (data) => {
         try {
-            await addProducts(name, price, quantity, description, image, category);
+            await addProducts(data.name, data.price, data.quantity, data.description, data.image, data.category);
             showToast('Product added successfully', 'success');
-            // Reset form
-            setName('');
-            setPrice('');
-            setQuantity('');
-            setDescription('');
-            setImage('');
-            setCategory('Others');
+            reset();
         } catch (error) {
             console.error('Error adding product', error);
             showToast('Failed to add product. Please try again.', 'error');
@@ -39,7 +51,7 @@ function ProductForm() {
                     <p className="text-gray-500 text-sm mt-1">Create a new product listing for your store</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8">
+                <form onSubmit={handleSubmit(onSubmit)} className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column - Main Info */}
                         <div className="lg:col-span-2 space-y-6">
@@ -48,12 +60,11 @@ function ProductForm() {
                                 <input
                                     type="text"
                                     id="name"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g., Premium Basmati Rice"
-                                    required
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
+                                    {...register('name')}
                                 />
+                                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -64,13 +75,12 @@ function ProductForm() {
                                         <input
                                             type="number"
                                             id="price"
-                                            value={price}
-                                            onChange={(e) => setPrice(e.target.value)}
                                             placeholder="0.00"
-                                            required
-                                            className="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
+                                            className={`w-full pl-8 pr-4 py-3 rounded-lg border ${errors.price ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
+                                            {...register('price')}
                                         />
                                     </div>
+                                    {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
                                 </div>
 
                                 <div>
@@ -78,12 +88,11 @@ function ProductForm() {
                                     <input
                                         type="number"
                                         id="quantity"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
                                         placeholder="Available stock"
-                                        required
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.quantity ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
+                                        {...register('quantity')}
                                     />
+                                    {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity.message}</p>}
                                 </div>
                             </div>
 
@@ -91,12 +100,12 @@ function ProductForm() {
                                 <label htmlFor="description" className="block mb-2 text-sm font-semibold text-gray-700">Description</label>
                                 <textarea
                                     id="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
                                     placeholder="Describe the product features and benefits..."
                                     rows="5"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white resize-none"
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white resize-none`}
+                                    {...register('description')}
                                 ></textarea>
+                                {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
                             </div>
                         </div>
 
@@ -106,14 +115,14 @@ function ProductForm() {
                                 <label htmlFor="category" className="block mb-2 text-sm font-semibold text-gray-700">Category</label>
                                 <select
                                     id="category"
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-white cursor-pointer"
+                                    {...register('category')}
                                 >
                                     {categories.map((cat) => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
                                 </select>
+                                {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
                             </div>
 
                             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
@@ -121,18 +130,17 @@ function ProductForm() {
                                 <input
                                     type="text"
                                     id="image"
-                                    value={image}
-                                    onChange={(e) => setImage(e.target.value)}
                                     placeholder="Image URL"
-                                    required
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-white mb-4"
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.image ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-white mb-4`}
+                                    {...register('image')}
                                 />
+                                {errors.image && <p className="text-red-500 text-xs mt-1 mb-2">{errors.image.message}</p>}
 
                                 <div className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-white overflow-hidden relative group">
-                                    {image ? (
+                                    {watchedImage ? (
                                         <>
                                             <img
-                                                src={image}
+                                                src={watchedImage}
                                                 alt="Preview"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
@@ -158,9 +166,10 @@ function ProductForm() {
                     <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
                         <button
                             type="submit"
-                            className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all duration-200 active:translate-y-0"
+                            disabled={isSubmitting}
+                            className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all duration-200 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            Create Product
+                            {isSubmitting ? 'Creating...' : 'Create Product'}
                         </button>
                     </div>
                 </form>

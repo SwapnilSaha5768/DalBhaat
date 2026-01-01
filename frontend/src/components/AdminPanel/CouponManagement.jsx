@@ -1,18 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const couponSchema = z.object({
+  code: z.string().min(1, "Coupon code is required"),
+  discount: z.preprocess((val) => Number(val), z.number().min(0, "Discount must be positive")),
+  usageLimit: z.preprocess((val) => val === '' ? null : Number(val), z.number().nullable().optional()),
+  expiresAt: z.string().min(1, "Expiration date is required")
+});
 
 function CouponManagement() {
   const [coupons, setCoupons] = useState([]);
-  const [newCoupon, setNewCoupon] = useState({
-    code: '',
-    discount: 0,
-    expiresAt: '',
-    usageLimit: null,
-  });
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [activeView, setActiveView] = useState('create');
   const { showToast } = useToast();
+
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+    resolver: zodResolver(couponSchema),
+    defaultValues: {
+      code: '',
+      discount: '',
+      usageLimit: '',
+      expiresAt: ''
+    }
+  });
 
   useEffect(() => {
     fetchCoupons();
@@ -27,12 +41,12 @@ function CouponManagement() {
     }
   };
 
-  const handleCreateCoupon = async () => {
+  const onCreateSubmit = async (data) => {
     try {
-      await createCoupon(newCoupon);
+      await createCoupon(data);
       showToast('Coupon created successfully!', 'success');
       fetchCoupons();
-      setNewCoupon({ code: '', discount: 0, expiresAt: '', usageLimit: null });
+      reset();
       setActiveView('existing');
     } catch (error) {
       console.error('Error creating coupon:', error);
@@ -107,16 +121,19 @@ function CouponManagement() {
                 <p className="text-gray-500 text-sm mt-1">Generate a discount code for your customers</p>
               </div>
 
-              <div className="p-6 space-y-6">
+              <form onSubmit={handleSubmit(onCreateSubmit)} className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Coupon Code</label>
                   <div className="relative">
                     <input
                       type="text"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white uppercase tracking-wider font-medium"
+                      className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.code ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white uppercase tracking-wider font-medium`}
                       placeholder="e.g., SUMMER2024"
-                      value={newCoupon.code}
-                      onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                      {...register('code')}
+                      onChange={(e) => {
+                        e.target.value = e.target.value.toUpperCase();
+                        setValue('code', e.target.value);
+                      }}
                     />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -125,6 +142,7 @@ function CouponManagement() {
                       </svg>
                     </div>
                   </div>
+                  {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,23 +152,23 @@ function CouponManagement() {
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">৳</span>
                       <input
                         type="number"
-                        className="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
+                        className={`w-full pl-8 pr-4 py-3 rounded-lg border ${errors.discount ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
                         placeholder="0.00"
-                        value={newCoupon.discount}
-                        onChange={(e) => setNewCoupon({ ...newCoupon, discount: e.target.value })}
+                        {...register('discount')}
                       />
                     </div>
+                    {errors.discount && <p className="text-red-500 text-xs mt-1">{errors.discount.message}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Usage Limit</label>
                     <input
                       type="number"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.usageLimit ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
                       placeholder="Unlimited if empty"
-                      value={newCoupon.usageLimit || ''}
-                      onChange={(e) => setNewCoupon({ ...newCoupon, usageLimit: e.target.value || null })}
+                      {...register('usageLimit')}
                     />
+                    {errors.usageLimit && <p className="text-red-500 text-xs mt-1">{errors.usageLimit.message}</p>}
                   </div>
                 </div>
 
@@ -158,21 +176,21 @@ function CouponManagement() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Expiration Date</label>
                   <input
                     type="date"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white"
-                    value={newCoupon.expiresAt}
-                    onChange={(e) => setNewCoupon({ ...newCoupon, expiresAt: e.target.value })}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.expiresAt ? 'border-red-500' : 'border-gray-200'} focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none bg-gray-50 focus:bg-white`}
+                    {...register('expiresAt')}
                   />
+                  {errors.expiresAt && <p className="text-red-500 text-xs mt-1">{errors.expiresAt.message}</p>}
                 </div>
 
                 <div className="pt-4">
                   <button
-                    onClick={handleCreateCoupon}
+                    type="submit"
                     className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all duration-200 active:translate-y-0"
                   >
                     Create Coupon
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         )}

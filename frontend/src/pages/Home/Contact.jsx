@@ -1,32 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const contactSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    message: z.string().min(10, "Message must be at least 10 characters")
+});
 
 const Contact = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        message: ''
-    });
     const { showToast } = useToast();
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            name: '',
+            email: '',
+            message: ''
+        }
+    });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        setTimeout(() => {
-            showToast('Message sent successfully! We will get back to you soon.', 'success');
-            setFormData({ name: '', email: '', message: '' });
-            setIsSubmitting(false);
-        }, 1500);
+    const onSubmit = async (data) => {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        showToast('Message sent successfully! We will get back to you soon.', 'success');
+        reset();
     };
 
     return (
@@ -94,45 +95,39 @@ const Contact = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Send us a Message</h2>
                     <p className="text-gray-500 text-sm mb-8">We usually respond within 24 hours.</p>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium text-gray-700">Name</label>
                                 <input
                                     type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm"
+                                    {...register('name')}
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm`}
                                     placeholder="John Doe"
                                 />
+                                {errors.name && <span className="text-red-500 text-xs">{errors.name.message}</span>}
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium text-gray-700">Email</label>
                                 <input
                                     type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm"
+                                    {...register('email')}
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm`}
                                     placeholder="john@example.com"
                                 />
+                                {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium text-gray-700">Message</label>
                             <textarea
-                                name="message"
-                                value={formData.message}
-                                onChange={handleChange}
-                                required
+                                {...register('message')}
                                 rows="5"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm resize-none"
+                                className={`w-full px-4 py-3 rounded-lg border ${errors.message ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff6b6b] focus:ring-4 focus:ring-[#ff6b6b]/10 outline-none transition-all placeholder:text-gray-400 text-sm resize-none`}
                                 placeholder="How can we help you today?"
                             ></textarea>
+                            {errors.message && <span className="text-red-500 text-xs">{errors.message.message}</span>}
                         </div>
 
                         <button

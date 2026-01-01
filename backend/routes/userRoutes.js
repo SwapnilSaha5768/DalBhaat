@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/authMiddleware');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -24,6 +26,19 @@ router.post('/register', async (req, res) => {
     });
 
     await user.save();
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET || 'defaultsecret',
+      { expiresIn: '1h' }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    });
 
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (err) {
@@ -63,10 +78,17 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict', // or 'lax' depending on your needs
+      maxAge: 3600000 // 1 hour
+    });
+
     res.json({
       success: true,
       message: 'Login successful',
-      token,
+      // token, // Token is now in cookie, optional to send back but safer not to for this refactor
       isAdmin: user.isAdmin,
       userId: user._id.toString(),
     });
@@ -74,6 +96,88 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
+});
+
+// Forgot Password Route
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    await user.save();
+
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // or configured host/port
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `https://dalbhaat.vercel.app/reset-password/${resetToken}`;
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_USER,
+      subject: 'Password Reset Request',
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n` +
+        `Please click on the following link, or paste this into your browser to complete the process:\n\n` +
+        `${resetUrl}\n\n` +
+        `If you did not request this, please ignore this email and your password will remain unchanged.\n`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Email sent successfully' });
+
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset Password Route
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Password reset token is invalid or has expired' });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password has been updated' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Logout route
+router.post('/logout', (req, res) => {
+  res.cookie('token', '', {
+    httpOnly: true,
+    expires: new Date(0)
+  });
+  res.json({ message: 'Logged out successfully' });
 });
 
 // Get user profile
@@ -125,6 +229,31 @@ router.put('/profile', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error('Error updating profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update user password
+router.put('/profile/password', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Error updating password:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

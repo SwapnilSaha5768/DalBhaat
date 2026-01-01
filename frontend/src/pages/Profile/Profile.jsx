@@ -1,9 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { getUserProfile, updateUserProfile, getUserOrders } from '../../services/api';
-// import { useNavigate } from 'react-router-dom';
+import { getUserProfile, updateUserProfile, getUserOrders, updateUserPassword } from '../../services/api';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+// --- Schemas ---
+const profileSchema = z.object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    phone: z.string().optional(),
+    bio: z.string().optional(),
+    email: z.string().optional(), // Read-only but good to include
+});
+
+const addressSchema = z.object({
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    zip: z.string().min(1, 'ZIP is required'),
+    isDefault: z.boolean().optional()
+});
+
+const passwordSchema = z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+});
 
 const Profile = () => {
-    // const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile');
     const [user, setUser] = useState({
         name: '',
@@ -19,11 +44,25 @@ const Profile = () => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
-    const [newAddress, setNewAddress] = useState({ street: '', city: '', zip: '', isDefault: false });
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [editingAddressIndex, setEditingAddressIndex] = useState(null);
-
     const [selectedOrder, setSelectedOrder] = useState(null);
+
+    // --- Forms ---
+    const profileForm = useForm({
+        resolver: zodResolver(profileSchema),
+        defaultValues: { name: '', phone: '', bio: '', email: '' }
+    });
+
+    const addressForm = useForm({
+        resolver: zodResolver(addressSchema),
+        defaultValues: { street: '', city: '', zip: '', isDefault: false }
+    });
+
+    const passwordForm = useForm({
+        resolver: zodResolver(passwordSchema),
+        defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' }
+    });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -38,6 +77,15 @@ const Profile = () => {
                 };
                 setUser(userData);
                 setOrders(ordersData);
+
+                // Reset profile form with fetched data
+                profileForm.reset({
+                    name: userData.name || '',
+                    phone: userData.phone || '',
+                    bio: userData.bio || '',
+                    email: userData.email || ''
+                });
+
             } catch (err) {
                 console.error('Profile Error:', err);
                 setError(err.response?.data?.message || err.message || 'Failed to load profile data');
@@ -47,18 +95,21 @@ const Profile = () => {
         };
 
         fetchData();
-    }, []);
+    }, [profileForm]); // Include profileForm in dependency (safe as it's stable)
 
-    const handleChange = (e) => {
-        setUser({ ...user, [e.target.name]: e.target.value });
-    };
+    // --- Handlers ---
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onProfileSubmit = async (data) => {
         setSuccessMessage('');
         setError('');
         try {
-            const updatedUser = await updateUserProfile(user);
+            // We only send editable fields. Email is read-only usually.
+            const updatedUser = await updateUserProfile({
+                ...user,
+                name: data.name,
+                phone: data.phone,
+                bio: data.bio
+            });
             setUser({ ...updatedUser, addresses: updatedUser.addresses || [] });
             setSuccessMessage('Profile updated successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -68,30 +119,28 @@ const Profile = () => {
         }
     };
 
-    // Address Management Functions
-    const handleSaveAddress = async () => {
-        if (!newAddress.street) return;
-
+    const onAddressSubmit = async (data) => {
         let updatedAddresses = [...user.addresses];
 
-        if (newAddress.isDefault) {
+        if (data.isDefault) {
             updatedAddresses.forEach(addr => addr.isDefault = false);
         }
 
         if (editingAddressIndex !== null) {
-            // Update existing address
-            updatedAddresses[editingAddressIndex] = newAddress;
+            updatedAddresses[editingAddressIndex] = data;
         } else {
-            // Add new address
-            updatedAddresses.push(newAddress);
+            updatedAddresses.push(data);
         }
 
         try {
             const updatedUser = await updateUserProfile({ ...user, addresses: updatedAddresses });
             setUser({ ...updatedUser, addresses: updatedUser.addresses || [] });
-            setNewAddress({ street: '', city: '', zip: '', isDefault: false });
+
+            // Cleanup UI
+            addressForm.reset({ street: '', city: '', zip: '', isDefault: false });
             setShowAddressForm(false);
             setEditingAddressIndex(null);
+
             setSuccessMessage(editingAddressIndex !== null ? 'Address updated successfully!' : 'Address added successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
@@ -99,13 +148,20 @@ const Profile = () => {
         }
     };
 
-    const handleEditAddress = (index) => {
-        setNewAddress(user.addresses[index]);
+    const onCreateAddressClick = () => {
+        addressForm.reset({ street: '', city: '', zip: '', isDefault: false });
+        setEditingAddressIndex(null);
+        setShowAddressForm(true);
+    };
+
+    const onEditAddressClick = (index) => {
+        const addr = user.addresses[index];
+        addressForm.reset(addr);
         setEditingAddressIndex(index);
         setShowAddressForm(true);
     };
 
-    const handleDeleteAddress = async (index) => {
+    const onDeleteAddress = async (index) => {
         const updatedAddresses = user.addresses.filter((_, i) => i !== index);
         try {
             const updatedUser = await updateUserProfile({ ...user, addresses: updatedAddresses });
@@ -117,7 +173,7 @@ const Profile = () => {
         }
     };
 
-    const handleSetDefaultAddress = async (index) => {
+    const onSetDefaultAddress = async (index) => {
         const updatedAddresses = user.addresses.map((addr, i) => ({
             ...addr,
             isDefault: i === index
@@ -131,6 +187,24 @@ const Profile = () => {
             setError('Failed to update default address');
         }
     };
+
+    const onPasswordSubmit = async (data) => {
+        setSuccessMessage('');
+        setError('');
+        try {
+            await updateUserPassword({
+                currentPassword: data.currentPassword,
+                newPassword: data.newPassword
+            });
+            setSuccessMessage('Password updated successfully!');
+            passwordForm.reset();
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Password Update Error:', err);
+            setError(err.response?.data?.message || 'Failed to update password');
+        }
+    };
+
 
     if (loading) {
         return (
@@ -238,25 +312,23 @@ const Profile = () => {
                             {activeTab === 'profile' && (
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
-                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
                                                 <input
                                                     type="text"
-                                                    name="name"
-                                                    value={user.name}
-                                                    onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none"
+                                                    {...profileForm.register('name')}
+                                                    className={`w-full px-4 py-3 rounded-lg border ${profileForm.formState.errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none`}
                                                     placeholder="John Doe"
                                                 />
+                                                {profileForm.formState.errors.name && <span className="text-red-500 text-sm mt-1">{profileForm.formState.errors.name.message}</span>}
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
                                                 <input
                                                     type="email"
-                                                    name="email"
-                                                    value={user.email}
+                                                    {...profileForm.register('email')}
                                                     disabled
                                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed"
                                                 />
@@ -265,9 +337,7 @@ const Profile = () => {
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
                                                 <input
                                                     type="text"
-                                                    name="phone"
-                                                    value={user.phone}
-                                                    onChange={handleChange}
+                                                    {...profileForm.register('phone')}
                                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none"
                                                     placeholder="+1 234 567 890"
                                                 />
@@ -283,9 +353,7 @@ const Profile = () => {
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
                                                 <textarea
-                                                    name="bio"
-                                                    value={user.bio}
-                                                    onChange={handleChange}
+                                                    {...profileForm.register('bio')}
                                                     rows="3"
                                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none resize-none"
                                                     placeholder="Tell us about yourself..."
@@ -296,9 +364,10 @@ const Profile = () => {
                                         <div className="flex justify-end pt-4">
                                             <button
                                                 type="submit"
-                                                className="px-8 py-3 bg-[#ff1e00] text-white font-bold rounded-lg hover:bg-[#e01b00] transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-[#ff1e00]/30"
+                                                disabled={profileForm.formState.isSubmitting}
+                                                className="px-8 py-3 bg-[#ff1e00] text-white font-bold rounded-lg hover:bg-[#e01b00] transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-[#ff1e00]/30 disabled:opacity-70"
                                             >
-                                                Save Changes
+                                                {profileForm.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
                                             </button>
                                         </div>
                                     </form>
@@ -370,7 +439,7 @@ const Profile = () => {
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <button
-                                                        onClick={() => handleEditAddress(index)}
+                                                        onClick={() => onEditAddressClick(index)}
                                                         className="text-blue-500 hover:text-blue-700"
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,14 +448,14 @@ const Profile = () => {
                                                     </button>
                                                     {!addr.isDefault && (
                                                         <button
-                                                            onClick={() => handleSetDefaultAddress(index)}
+                                                            onClick={() => onSetDefaultAddress(index)}
                                                             className="text-sm text-gray-500 hover:text-[#ff1e00]"
                                                         >
                                                             Set Default
                                                         </button>
                                                     )}
                                                     <button
-                                                        onClick={() => handleDeleteAddress(index)}
+                                                        onClick={() => onDeleteAddress(index)}
                                                         className="text-red-500 hover:text-red-700"
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -401,11 +470,7 @@ const Profile = () => {
                                     {/* Add New Address Form */}
                                     {!showAddressForm ? (
                                         <button
-                                            onClick={() => {
-                                                setNewAddress({ street: '', city: '', zip: '', isDefault: false });
-                                                setEditingAddressIndex(null);
-                                                setShowAddressForm(true);
-                                            }}
+                                            onClick={onCreateAddressClick}
                                             className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-[#ff1e00] hover:text-[#ff1e00] transition-colors duration-200 font-medium"
                                         >
                                             + Add New Address
@@ -413,67 +478,69 @@ const Profile = () => {
                                     ) : (
                                         <div className="p-6 border border-gray-200 rounded-xl bg-gray-50">
                                             <h3 className="font-bold text-gray-900 mb-4">{editingAddressIndex !== null ? 'Edit Address' : 'Add New Address'}</h3>
-                                            <div className="space-y-4">
+                                            <form onSubmit={addressForm.handleSubmit(onAddressSubmit)} className="space-y-4">
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Street Address</label>
                                                     <input
                                                         type="text"
-                                                        value={newAddress.street}
-                                                        onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white"
+                                                        {...addressForm.register('street')}
+                                                        className={`w-full px-4 py-3 rounded-lg border ${addressForm.formState.errors.street ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white`}
                                                         placeholder="Street Address"
                                                     />
+                                                    {addressForm.formState.errors.street && <span className="text-red-500 text-sm mt-1">{addressForm.formState.errors.street.message}</span>}
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
                                                         <input
                                                             type="text"
-                                                            value={newAddress.city}
-                                                            onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white"
+                                                            {...addressForm.register('city')}
+                                                            className={`w-full px-4 py-3 rounded-lg border ${addressForm.formState.errors.city ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white`}
                                                             placeholder="City"
                                                         />
+                                                        {addressForm.formState.errors.city && <span className="text-red-500 text-sm mt-1">{addressForm.formState.errors.city.message}</span>}
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-semibold text-gray-700 mb-2">ZIP Code</label>
                                                         <input
                                                             type="text"
-                                                            value={newAddress.zip}
-                                                            onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })}
-                                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white"
+                                                            {...addressForm.register('zip')}
+                                                            className={`w-full px-4 py-3 rounded-lg border ${addressForm.formState.errors.zip ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 outline-none bg-white`}
                                                             placeholder="ZIP Code"
                                                         />
+                                                        {addressForm.formState.errors.zip && <span className="text-red-500 text-sm mt-1">{addressForm.formState.errors.zip.message}</span>}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="checkbox"
                                                         id="isDefault"
-                                                        checked={newAddress.isDefault}
-                                                        onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
+                                                        {...addressForm.register('isDefault')}
                                                         className="w-4 h-4 text-[#ff1e00] border-gray-300 rounded focus:ring-[#ff1e00]"
                                                     />
                                                     <label htmlFor="isDefault" className="text-sm text-gray-700">Set as default address</label>
                                                 </div>
                                                 <div className="flex gap-3 justify-end pt-2">
                                                     <button
+                                                        type="button"
                                                         onClick={() => {
                                                             setShowAddressForm(false);
                                                             setEditingAddressIndex(null);
+                                                            addressForm.reset();
                                                         }}
                                                         className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                                                     >
                                                         Cancel
                                                     </button>
                                                     <button
-                                                        onClick={handleSaveAddress}
-                                                        className="px-6 py-2 bg-[#ff1e00] text-white font-bold rounded-lg hover:bg-[#e01b00] transition-colors duration-200"
+                                                        type="submit"
+                                                        disabled={addressForm.formState.isSubmitting}
+                                                        className="px-6 py-2 bg-[#ff1e00] text-white font-bold rounded-lg hover:bg-[#e01b00] transition-colors duration-200 disabled:opacity-70"
                                                     >
                                                         {editingAddressIndex !== null ? 'Update Address' : 'Save Address'}
                                                     </button>
                                                 </div>
-                                            </div>
+                                            </form>
                                         </div>
                                     )}
                                 </div>
@@ -481,8 +548,48 @@ const Profile = () => {
 
                             {activeTab === 'settings' && (
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Account Settings</h2>
-                                    <p className="text-gray-500">Settings configuration coming soon...</p>
+                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
+                                    <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6 max-w-lg">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                                            <input
+                                                type="password"
+                                                {...passwordForm.register('currentPassword')}
+                                                className={`w-full px-4 py-3 rounded-lg border ${passwordForm.formState.errors.currentPassword ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none`}
+                                                placeholder="Enter current password"
+                                            />
+                                            {passwordForm.formState.errors.currentPassword && <span className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.currentPassword.message}</span>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                                            <input
+                                                type="password"
+                                                {...passwordForm.register('newPassword')}
+                                                className={`w-full px-4 py-3 rounded-lg border ${passwordForm.formState.errors.newPassword ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none`}
+                                                placeholder="Enter new password"
+                                            />
+                                            {passwordForm.formState.errors.newPassword && <span className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.newPassword.message}</span>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                                            <input
+                                                type="password"
+                                                {...passwordForm.register('confirmPassword')}
+                                                className={`w-full px-4 py-3 rounded-lg border ${passwordForm.formState.errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} focus:border-[#ff1e00] focus:ring-4 focus:ring-[#ff1e00]/10 transition-all duration-200 outline-none`}
+                                                placeholder="Confirm new password"
+                                            />
+                                            {passwordForm.formState.errors.confirmPassword && <span className="text-red-500 text-sm mt-1">{passwordForm.formState.errors.confirmPassword.message}</span>}
+                                        </div>
+                                        <div className="flex justify-end pt-4">
+                                            <button
+                                                type="submit"
+                                                disabled={passwordForm.formState.isSubmitting}
+                                                className="px-8 py-3 bg-[#ff1e00] text-white font-bold rounded-lg hover:bg-[#e01b00] transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-[#ff1e00]/30 disabled:opacity-70"
+                                            >
+                                                {passwordForm.formState.isSubmitting ? 'Updating...' : 'Update Password'}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             )}
                         </div>

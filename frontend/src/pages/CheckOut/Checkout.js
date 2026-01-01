@@ -2,60 +2,89 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { placeOrder, reduceStock, validateCoupon, clearCart, getUserProfile } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import './CheckoutPage.css';
+
+const checkoutSchema = z.object({
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().min(1, "Delivery address is required"),
+  paymentMethod: z.enum(['cash', 'bkash']),
+  transactionId: z.string().optional(),
+  deliveryOption: z.enum(['standard', 'express'])
+}).superRefine((data, ctx) => {
+  if (data.paymentMethod === 'bkash' && (!data.transactionId || data.transactionId.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Transaction ID is required for bKash",
+      path: ["transactionId"]
+    });
+  }
+});
 
 function CheckoutPage() {
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // UI State
   const [cartItems, setCartItems] = useState([]);
-  const [billingInfo, setBillingInfo] = useState({
-    name: '',
-    phone: '',
-    address: '',
-  });
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [transactionId, setTransactionId] = useState('');
-  const [deliveryOption, setDeliveryOption] = useState('standard');
   const [deliveryCharge, setDeliveryCharge] = useState(60);
-  const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [finalTotal, setFinalTotal] = useState(0);
-
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState('new');
+  const [userName, setUserName] = useState(''); // Name is read-only
 
-  const handleAddressSelect = React.useCallback((index, addresses = savedAddresses) => {
-    setSelectedAddressIndex(index);
-    if (index === 'new') {
-      setBillingInfo(prev => ({ ...prev, address: '' }));
-    } else {
-      const addr = addresses[index];
-      const formattedAddress = `${addr.street}, ${addr.city}, ${addr.zip}`;
-      setBillingInfo(prev => ({ ...prev, address: formattedAddress }));
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+
+  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      phone: '',
+      address: '',
+      paymentMethod: 'cash',
+      transactionId: '',
+      deliveryOption: 'standard'
     }
-  }, [savedAddresses]);
+  });
+
+  const watchedPaymentMethod = watch('paymentMethod');
+  const watchedDeliveryOption = watch('deliveryOption');
+
+  const calculateTotal = React.useCallback((items, charge, disc) => {
+    const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0) + charge - disc;
+    setFinalTotal(totalAmount);
+  }, []);
+
+  // Watch delivery option changes to update total
+  useEffect(() => {
+    const charge = watchedDeliveryOption === 'express' ? 100 : 60;
+    setDeliveryCharge(charge);
+    if (cartItems.length > 0) {
+      calculateTotal(cartItems, charge, discount);
+    }
+  }, [watchedDeliveryOption, cartItems, discount, calculateTotal]);
 
   useEffect(() => {
     if (location.state && location.state.cartItems) {
       setCartItems(location.state.cartItems);
+      // Initial calculation
       calculateTotal(location.state.cartItems, 60, 0);
     } else {
       console.error('No cart items found! Redirecting to cart...');
       navigate('/cart');
     }
 
-    // Fetch user profile
     const fetchUserProfile = async () => {
       try {
         const userId = localStorage.getItem('userId');
         if (userId) {
           const userProfile = await getUserProfile();
-          setBillingInfo(prev => ({
-            ...prev,
-            name: userProfile.name || '',
-            phone: userProfile.phone || '',
-          }));
+          setUserName(userProfile.name || '');
+          setValue('phone', userProfile.phone || '');
 
           if (userProfile.addresses && userProfile.addresses.length > 0) {
             setSavedAddresses(userProfile.addresses);
@@ -72,36 +101,26 @@ function CheckoutPage() {
       }
     };
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location, navigate, setValue]); // calculateTotal is stable (useCallback) but handleAddressSelect is defined below
 
-  }, [location, navigate, handleAddressSelect]);
-
-  const calculateTotal = (items, deliveryCharge, discount) => {
-    const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0) + deliveryCharge - discount;
-    setFinalTotal(totalAmount);
-  };
-
-  const handleDeliveryChange = (option) => {
-    const charge = option === 'express' ? 100 : 60;
-    setDeliveryOption(option);
-    setDeliveryCharge(charge);
-    calculateTotal(cartItems, charge, discount);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setBillingInfo((prev) => ({ ...prev, [name]: value }));
-
-    // If user types in address, switch selection to 'new' if it's not already
-    if (name === 'address' && selectedAddressIndex !== 'new') {
-      setSelectedAddressIndex('new');
+  const handleAddressSelect = (index, addresses = savedAddresses) => {
+    setSelectedAddressIndex(index);
+    if (index === 'new') {
+      setValue('address', '');
+    } else {
+      const addr = addresses[index];
+      const formattedAddress = `${addr.street}, ${addr.city}, ${addr.zip}`;
+      setValue('address', formattedAddress);
     }
   };
 
+  // Wrapper for select onChange because of the "new" vs index logic
+  const onAddressSelectChange = (e) => {
+    const val = e.target.value;
+    handleAddressSelect(val === 'new' ? 'new' : parseInt(val));
+  };
 
-
-
-
-  // ... (rest of the component)
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -120,51 +139,38 @@ function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = async () => {
-    if (!billingInfo.name || !billingInfo.phone || !billingInfo.address) {
-      showToast('Please fill out all billing details', 'error');
-      return;
-    }
-    if (paymentMethod === 'bkash' && !transactionId.trim()) {
-      showToast('Please enter the bKash Transaction ID', 'error');
+  const onSubmit = async (data) => {
+    if (!userName) {
+      showToast('User information missing', 'error');
       return;
     }
 
     const orderData = {
-      // ... (order data construction)
-      name: billingInfo.name,
-      phone: billingInfo.phone,
-      address: billingInfo.address,
-      deliveryOption,
-      paymentMethod,
-      transactionId: paymentMethod === 'bkash' ? transactionId : null,
+      name: userName,
+      phone: data.phone,
+      address: data.address,
+      deliveryOption: data.deliveryOption,
+      paymentMethod: data.paymentMethod,
+      transactionId: data.paymentMethod === 'bkash' ? data.transactionId : null,
       orderSummary: cartItems.map((item) => ({
         productName: item.name,
         quantity: item.quantity,
         price: item.price,
       })),
       totalAmount: finalTotal,
-      userId: localStorage.getItem('userId'), // Include userId
+      userId: localStorage.getItem('userId'),
     };
 
     try {
-      // Place the order
       const response = await placeOrder(orderData);
-
-      // Reduce the stock in the database
       await reduceStock(orderData.orderSummary);
-
-      // Clear the cart
       await clearCart();
-
       showToast(response.message, 'success');
-
-      // Redirect to confirmation page
       navigate('/order-confirmation', {
         state: {
           orderDetails: {
             ...orderData,
-            orderId: response.orderId, // Include the order ID from the backend response
+            orderId: response.orderId,
           },
         },
       });
@@ -203,24 +209,23 @@ function CheckoutPage() {
         <p><strong>Discount:</strong> BDT {discount}</p>
         <p><strong>Total Amount:</strong> BDT {finalTotal.toFixed(2)}</p>
       </div>
+
       <div className="checkout-left">
         <h2>Billing Information</h2>
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="form-group">
             <label>Name</label>
-            <div className="read-only-field">{billingInfo.name || 'Loading...'}</div>
+            <div className="read-only-field">{userName || 'Loading...'}</div>
           </div>
           <div className="form-group">
             <label htmlFor="phone">Phone Number</label>
             <input
               type="text"
               id="phone"
-              name="phone"
-              value={billingInfo.phone}
-              onChange={handleInputChange}
-              required
               placeholder="Enter your phone number"
+              {...register('phone')}
             />
+            {errors.phone && <p className="error-text">{errors.phone.message}</p>}
           </div>
 
           {savedAddresses.length > 0 && (
@@ -228,7 +233,7 @@ function CheckoutPage() {
               <label>Select Address</label>
               <select
                 value={selectedAddressIndex}
-                onChange={(e) => handleAddressSelect(e.target.value === 'new' ? 'new' : parseInt(e.target.value))}
+                onChange={onAddressSelectChange}
                 className="address-select"
                 style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
               >
@@ -246,61 +251,82 @@ function CheckoutPage() {
             <label htmlFor="address">Billing Address</label>
             <textarea
               id="address"
-              name="address"
-              value={billingInfo.address}
-              onChange={handleInputChange}
-              required
               placeholder="Enter your delivery address"
               rows="3"
+              {...register('address')}
+            />
+            {errors.address && <p className="error-text">{errors.address.message}</p>}
+          </div>
+
+          <h2>Delivery Options</h2>
+          <div className="delivery-options">
+            <Controller
+              name="deliveryOption"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <button
+                    type="button"
+                    className={`delivery-option-btn ${field.value === 'standard' ? 'active' : ''}`}
+                    onClick={() => field.onChange('standard')}
+                  >
+                    Standard Delivery (+60 BDT)
+                  </button>
+                  <button
+                    type="button"
+                    className={`delivery-option-btn ${field.value === 'express' ? 'active' : ''}`}
+                    onClick={() => field.onChange('express')}
+                  >
+                    Express Delivery (+100 BDT)
+                  </button>
+                </>
+              )}
             />
           </div>
+
+          <h2>Payment Method</h2>
+          <div className="payment-options">
+            <Controller
+              name="paymentMethod"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <button
+                    type="button"
+                    className={`payment-option-btn ${field.value === 'cash' ? 'active' : ''}`}
+                    onClick={() => field.onChange('cash')}
+                  >
+                    Cash on Delivery
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-option-btn ${field.value === 'bkash' ? 'active' : ''}`}
+                    onClick={() => field.onChange('bkash')}
+                  >
+                    bKash
+                  </button>
+                </>
+              )}
+            />
+          </div>
+
+          {watchedPaymentMethod === 'bkash' && (
+            <div className="form-group">
+              <label htmlFor="transactionId">Bkash Transaction ID</label>
+              <input
+                type="text"
+                id="transactionId"
+                placeholder="Enter Transaction ID"
+                {...register('transactionId')}
+              />
+              {errors.transactionId && <p className="error-text">{errors.transactionId.message}</p>}
+            </div>
+          )}
+
+          <button className="place-order-btn" type="submit">
+            Place Order
+          </button>
         </form>
-        <h2>Delivery Options</h2>
-        <div className="delivery-options">
-          <button
-            className={`delivery-option-btn ${deliveryOption === 'standard' ? 'active' : ''}`}
-            onClick={() => handleDeliveryChange('standard')}
-          >
-            Standard Delivery (+60 BDT)
-          </button>
-          <button
-            className={`delivery-option-btn ${deliveryOption === 'express' ? 'active' : ''}`}
-            onClick={() => handleDeliveryChange('express')}
-          >
-            Express Delivery (+100 BDT)
-          </button>
-        </div>
-        <h2>Payment Method</h2>
-        <div className="payment-options">
-          <button
-            className={`payment-option-btn ${paymentMethod === 'cash' ? 'active' : ''}`}
-            onClick={() => setPaymentMethod('cash')}
-          >
-            Cash on Delivery
-          </button>
-          <button
-            className={`payment-option-btn ${paymentMethod === 'bkash' ? 'active' : ''}`}
-            onClick={() => setPaymentMethod('bkash')}
-          >
-            bKash
-          </button>
-        </div>
-        {paymentMethod === 'bkash' && (
-          <div className="form-group">
-            <label htmlFor="transactionId">Bkash Transaction ID</label>
-            <input
-              type="text"
-              id="transactionId"
-              value={transactionId}
-              onChange={(e) => setTransactionId(e.target.value)}
-              placeholder="Enter Transaction ID"
-              required
-            />
-          </div>
-        )}
-        <button className="place-order-btn" onClick={handlePlaceOrder}>
-          Place Order
-        </button>
       </div>
     </div>
   );

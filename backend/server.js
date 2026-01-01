@@ -15,6 +15,8 @@ const incomeRoutes = require('./routes/incomeRoutes');
 
 
 dotenv.config();
+const cookieParser = require('cookie-parser');
+
 const app = express();
 
 // MongoDB Connection
@@ -27,7 +29,11 @@ mongoose
   })
   .catch((err) => console.log('Error:', err));
 
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://www.dalbhaat.vercel.app'],
+  credentials: true
+}));
 app.use(express.json());
 
 

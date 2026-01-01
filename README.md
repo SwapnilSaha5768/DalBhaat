@@ -131,5 +131,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <br />
 <div align="center">
-  <p>Made with ❤️ by the Swapnil Saha</p>
+  <p>Made with ❤️ by the DalBhaat Team</p>
 </div>
