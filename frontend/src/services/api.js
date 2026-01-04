@@ -76,6 +76,15 @@ export const loginUser = async (email, password) => {
   }
 };
 
+export const logoutUser = async () => {
+  try {
+    await axios.post(`${API_BASE_URL}/users/logout`);
+  } catch (error) {
+    console.error('Error logging out:', error);
+    // Even if the server call fails, we should likely proceed with client-side cleanup
+  }
+};
+
 
 export const deleteProduct = async (id) => {
   try {
@@ -167,11 +176,7 @@ export const getOrders = async () => {
 
 export const updateCartItem = async (name, price, image, quantity) => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      throw new Error('User not logged in');
-    }
-    const response = await axios.put(`${API_BASE_URL}/cart`, { userId, name, price, image, quantity });
+    const response = await axios.put(`${API_BASE_URL}/cart`, { name, price, image, quantity });
 
     // Dispatch event to notify listeners (e.g., Header)
     window.dispatchEvent(new Event('cartUpdated'));
@@ -186,11 +191,7 @@ export const updateCartItem = async (name, price, image, quantity) => {
 // Get all cart items
 export const getCartItems = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      return [];
-    }
-    const response = await axios.get(`${API_BASE_URL}/cart`, { params: { userId } });
+    const response = await axios.get(`${API_BASE_URL}/cart`);
     return response.data.items;
   } catch (err) {
     console.error('Error fetching cart items:', err);
@@ -201,11 +202,7 @@ export const getCartItems = async () => {
 // Remove an item from the cart
 export const removeCartItem = async (name) => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      throw new Error('User not logged in');
-    }
-    await axios.delete(`${API_BASE_URL}/cart/${encodeURIComponent(name)}`, { data: { userId } });
+    await axios.delete(`${API_BASE_URL}/cart/${encodeURIComponent(name)}`);
 
     // Dispatch event to notify listeners
     window.dispatchEvent(new Event('cartUpdated'));
@@ -219,13 +216,7 @@ export const removeCartItem = async (name) => {
 
 export const updateWishlist = async (productName) => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      console.warn("User not logged in, cannot update wishlist");
-      return;
-    }
     const response = await axios.post(`${API_BASE_URL}/wishlist`, {
-      userId,
       name: productName,
     });
     return response.data;
@@ -237,12 +228,7 @@ export const updateWishlist = async (productName) => {
 
 export const getWishlist = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) return [];
-
-    const response = await axios.get(`${API_BASE_URL}/wishlist`, {
-      params: { userId }
-    });
+    const response = await axios.get(`${API_BASE_URL}/wishlist`);
     return response.data;
   } catch (error) {
     console.error('Error fetching wishlist:', error);
@@ -252,14 +238,8 @@ export const getWishlist = async () => {
 
 export const deleteWishlistItem = async (productName) => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      throw new Error('User not logged in');
-    }
     // Axios delete accepts data in the 'data' property of the config object
-    const response = await axios.delete(`${API_BASE_URL}/wishlist/${encodeURIComponent(productName)}`, {
-      data: { userId }
-    });
+    const response = await axios.delete(`${API_BASE_URL}/wishlist/${encodeURIComponent(productName)}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting wishlist item:', error);
@@ -292,10 +272,7 @@ export const placeOrder = async (orderData) => {
 // Clear cart (this depends on how your cart is stored; for now, we'll clear localStorage)
 export const clearCart = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      await axios.delete(`${API_BASE_URL}/cart`, { data: { userId } });
-    }
+    await axios.delete(`${API_BASE_URL}/cart`);
   } catch (error) {
     console.error('Error clearing cart:', error);
   }

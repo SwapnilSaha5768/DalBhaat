@@ -31,8 +31,7 @@ function Login({ onLogin }) {
             if (response && response.success) {
                 showToast('Login successful', 'success');
                 // No localStorage for token as it's in cookie
-                localStorage.setItem('isAdmin', response.isAdmin || false);
-                localStorage.setItem('userId', response.userId);
+
 
                 if (onLogin) {
                     onLogin(response.isAdmin || false);

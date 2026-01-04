@@ -80,20 +80,17 @@ function CheckoutPage() {
 
     const fetchUserProfile = async () => {
       try {
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-          const userProfile = await getUserProfile();
-          setUserName(userProfile.name || '');
-          setValue('phone', userProfile.phone || '');
+        const userProfile = await getUserProfile();
+        setUserName(userProfile.name || '');
+        setValue('phone', userProfile.phone || '');
 
-          if (userProfile.addresses && userProfile.addresses.length > 0) {
-            setSavedAddresses(userProfile.addresses);
-            const defaultIndex = userProfile.addresses.findIndex(addr => addr.isDefault);
-            if (defaultIndex !== -1) {
-              handleAddressSelect(defaultIndex, userProfile.addresses);
-            } else {
-              handleAddressSelect(0, userProfile.addresses);
-            }
+        if (userProfile.addresses && userProfile.addresses.length > 0) {
+          setSavedAddresses(userProfile.addresses);
+          const defaultIndex = userProfile.addresses.findIndex(addr => addr.isDefault);
+          if (defaultIndex !== -1) {
+            handleAddressSelect(defaultIndex, userProfile.addresses);
+          } else {
+            handleAddressSelect(0, userProfile.addresses);
           }
         }
       } catch (error) {
@@ -158,7 +155,6 @@ function CheckoutPage() {
         price: item.price,
       })),
       totalAmount: finalTotal,
-      userId: localStorage.getItem('userId'),
     };
 
     try {

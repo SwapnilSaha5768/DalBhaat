@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCartItems } from '../../services/api';
 
 function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSidebar, toggleSidebarCollapse, isSidebarCollapsed }) {
@@ -38,12 +38,13 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
     }, [updateCartCount]);
 
     const handleSearchChange = (e) => {
-        setQuery(e.target.value);
+        const newQuery = e.target.value;
+        setQuery(newQuery); // Update local state
+        setSearchQuery(newQuery); // Update parent component's search query immediately
     };
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        setSearchQuery(query);
         setIsMenuOpen(false); // Close menu on search
     };
 
@@ -69,7 +70,7 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                 {/* Logo */}
                 <div className="flex items-center gap-4">
                     {/* Desktop Admin Sidebar Toggle */}
-                    {isAdmin && location.pathname.startsWith('/admin') && (
+                    {isLoggedIn && isAdmin && location.pathname.startsWith('/admin') && (
                         <button
                             onClick={toggleSidebarCollapse}
                             className="hidden md:flex p-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800"
@@ -80,9 +81,9 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                             </svg>
                         </button>
                     )}
-                    <a href="/" className="text-2xl font-bold text-white tracking-tight hover:text-gray-200 transition-colors">
+                    <Link to="/" className="text-2xl font-bold text-white tracking-tight hover:text-gray-200 transition-colors">
                         DalBhaat
-                    </a>
+                    </Link>
                 </div>
 
                 {/* Desktop Navigation & Search */}
@@ -106,26 +107,26 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                     )}
 
                     <nav className="flex items-center gap-6">
-                        {isAdmin && (
-                            <a href="/admin" className="text-gray-300 hover:text-white font-medium transition-colors">
+                        {isLoggedIn && isAdmin && (
+                            <Link to="/admin" className="text-gray-300 hover:text-white font-medium transition-colors">
                                 Admin
-                            </a>
+                            </Link>
                         )}
 
-                        <a href="/cart" className="text-gray-300 hover:text-white font-medium transition-colors relative">
+                        <Link to="/cart" className="text-gray-300 hover:text-white font-medium transition-colors relative">
                             Cart
                             {cartCount > 0 && (
                                 <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                     {cartCount}
                                 </span>
                             )}
-                        </a>
+                        </Link>
 
                         {isLoggedIn ? (
                             <>
-                                <a href="/profile" className="text-gray-300 hover:text-white font-medium transition-colors">
+                                <Link to="/profile" className="text-gray-300 hover:text-white font-medium transition-colors">
                                     Profile
-                                </a>
+                                </Link>
                                 {!location.pathname.startsWith('/admin') && (
                                     <button
                                         onClick={handleLogout}
@@ -136,23 +137,23 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                                 )}
                             </>
                         ) : (
-                            <a href="/login" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <Link to="/login" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                                 Login
-                            </a>
+                            </Link>
                         )}
                     </nav>
                 </div>
 
                 {/* Mobile Actions */}
                 <div className="flex md:hidden items-center gap-4">
-                    <a href="/cart" className="relative p-2 text-gray-300 hover:text-white transition-colors">
+                    <Link to="/cart" className="relative p-2 text-gray-300 hover:text-white transition-colors">
                         <span className="text-xl">🛒</span>
                         {cartCount > 0 && (
                             <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-gray-900">
                                 {cartCount}
                             </span>
                         )}
-                    </a>
+                    </Link>
 
                     <button
                         onClick={toggleMenu}
@@ -186,16 +187,16 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                     )}
 
                     <nav className="flex flex-col gap-2">
-                        {isAdmin && (
-                            <a href="/admin" className="px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        {isLoggedIn && isAdmin && (
+                            <Link to="/admin" className="px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
                                 Admin Dashboard
-                            </a>
+                            </Link>
                         )}
 
                         {isLoggedIn && (
-                            <a href="/profile" className="px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                            <Link to="/profile" className="px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
                                 My Profile
-                            </a>
+                            </Link>
                         )}
 
                         {isLoggedIn ? (
@@ -206,9 +207,9 @@ function Header({ setSearchQuery, isLoggedIn, isAdmin, onLogout, toggleAdminSide
                                 Logout
                             </button>
                         ) : (
-                            <a href="/login" className="px-4 py-3 bg-indigo-600 text-white text-center rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                            <Link to="/login" className="px-4 py-3 bg-indigo-600 text-white text-center rounded-lg font-medium hover:bg-indigo-700 transition-colors">
                                 Login
-                            </a>
+                            </Link>
                         )}
                     </nav>
                 </div>

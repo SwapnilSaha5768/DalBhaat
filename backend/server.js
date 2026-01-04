@@ -30,6 +30,7 @@ mongoose
   .catch((err) => console.log('Error:', err));
 
 app.use(cookieParser());
+app.set('trust proxy', 1); // Trust first proxy (critical for Vercel/Render/Heroku)
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://www.dalbhaat.vercel.app'],
   credentials: true
@@ -92,16 +93,19 @@ if (require.main === module) {
 }
 async function createDefaultAdmin() {
   try {
-    await User.deleteOne({ email: 'admin@example.com' });
-
-    const adminUser = new User({
-      name: 'Admin',
-      email: 'admin@example.com',
-      password: 'admin123',
-      isAdmin: true,
-    });
-    await adminUser.save();
-    console.log('Default admin user created.');
+    const existingAdmin = await User.findOne({ email: 'admin@example.com' });
+    if (!existingAdmin) {
+      const adminUser = new User({
+        name: 'Admin',
+        email: 'admin@example.com',
+        password: 'admin123',
+        isAdmin: true,
+      });
+      await adminUser.save();
+      console.log('Default admin user created.');
+    } else {
+      console.log('Default admin user already exists.');
+    }
   } catch (error) {
     console.error('Error creating default admin user:', error);
   }

@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const Wishlist = require('../models/Wishlist');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { userId, name } = req.body;
+    const userId = req.user.id;
+    const { name } = req.body;
 
-    if (!userId || !name) {
-      return res.status(400).json({ error: 'User ID and Product name are required' });
+    if (!name) {
+      return res.status(400).json({ error: 'Product name is required' });
     }
 
     // Check if item already exists for this user
@@ -26,12 +28,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    const userId = req.user.id;
 
     // Get user's wishlist
     const userWishlist = await Wishlist.find({ userId });
@@ -52,14 +51,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.delete('/:name', async (req, res) => {
+router.delete('/:name', authMiddleware, async (req, res) => {
   try {
     const { name } = req.params;
-    const { userId } = req.body; // Expect userId in body for delete, or query? Usually delete body is tricky. Let's try query or body. 
-    // Standard axios delete accepts data in config.
+    const userId = req.user.id;
 
-    if (!name || !userId) {
-      return res.status(400).json({ error: 'Product name and User ID are required' });
+    if (!name) {
+      return res.status(400).json({ error: 'Product name is required' });
     }
 
     await Wishlist.deleteOne({ userId, name });

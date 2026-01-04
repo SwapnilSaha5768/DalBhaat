@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
@@ -16,18 +17,18 @@ function Footer() {
 
           {/* Links */}
           <div className="flex gap-8">
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
               Contact Us
-            </a>
-            <a
-              href="/faq"
+            </Link>
+            <Link
+              to="/faq"
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
               FAQ
-            </a>
+            </Link>
           </div>
 
         </div>

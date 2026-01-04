@@ -13,12 +13,11 @@ import FAQ from './pages/Home/Footer/FAQ';
 import Contact from './pages/Home/Contact';
 import OrderConfirmation from './pages/CheckOut/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
-
 import ProfilePage from './pages/Profile/Profile';
 import ProtectedAdminRoute from './components/AdminPanel/ProtectedAdminRoute';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import ResetPassword from './pages/Auth/ResetPassword';
-import { clearCart } from './services/api';
+import { clearCart, getUserProfile, logoutUser } from './services/api';
 import { ToastProvider } from './context/ToastContext';
 
 
@@ -35,36 +34,47 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  // Check authentication status on mount
+
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    setIsLoggedIn(!!token);
-    setIsAdmin(adminStatus);
-    setAuthLoading(false);
+    const checkAuthStatus = async () => {
+      try {
+        const user = await getUserProfile();
+        setIsLoggedIn(true);
+        setIsAdmin(user.isAdmin);
+      } catch (error) {
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
-  // Function to update auth state after login
   const handleLogin = (adminStatus) => {
     setIsLoggedIn(true);
     setIsAdmin(adminStatus);
   };
-
-  // Function to handle logout
   const handleLogout = async () => {
-    // Clear cart before logging out
-    await clearCart();
-
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setAdminSidebarOpen(false);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userId');
+    try {
+      await clearCart();
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+      setAdminSidebarOpen(false);
+    }
   };
 
   if (authLoading) {
-    return <div>Loading...</div>; // Or a proper loading spinner
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
   }
 
   return (
@@ -93,7 +103,7 @@ function AppContent() {
           <Route
             path="/admin"
             element={
-              <ProtectedAdminRoute>
+              <ProtectedAdminRoute isLoggedIn={isLoggedIn} isAdmin={isAdmin}>
                 <AdminPanel
                   isOpen={adminSidebarOpen}
                   setIsOpen={setAdminSidebarOpen}

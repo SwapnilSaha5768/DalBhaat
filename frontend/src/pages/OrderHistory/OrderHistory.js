@@ -11,15 +11,8 @@ function OrderHistory() {
 
     useEffect(() => {
         const fetchOrders = async () => {
-            const userId = localStorage.getItem('userId');
-            
-            if (!userId) {
-                setError('Please logout and login again.');
-                setLoading(false);
-                return;
-            }
             try {
-                const data = await getUserOrders(userId);
+                const data = await getUserOrders();
                 setOrders(data);
             } catch (error) {
                 console.error('Error fetching order history:', error);

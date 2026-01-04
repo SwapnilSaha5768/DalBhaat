@@ -1,12 +1,14 @@
 const express = require('express');
 const Order = require('../models/Order');
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Force redeploy check
 
-router.post('/create', async (req, res) => {
+router.post('/create', authMiddleware, async (req, res) => {
   try {
-    const { name, phone, address, deliveryOption, paymentMethod, transactionId, orderSummary, totalAmount, userId } = req.body;
+    const { name, phone, address, deliveryOption, paymentMethod, transactionId, orderSummary, totalAmount } = req.body;
+    const userId = req.user.id;
 
     // console.log('Creating order. userId:', userId); // Debug log
 
@@ -34,8 +36,6 @@ router.post('/create', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-const authMiddleware = require('../middleware/authMiddleware');
 
 // Get orders for the authenticated user
 router.get('/my-orders', authMiddleware, async (req, res) => {

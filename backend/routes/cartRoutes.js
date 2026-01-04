@@ -1,14 +1,12 @@
 const express = require('express');
 const Cart = require('../models/Cart');
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 
-router.get('/cart', async (req, res) => {
+router.get('/cart', authMiddleware, async (req, res) => {
   try {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ success: false, message: 'userId is required' });
-    }
+    const userId = req.user.id;
 
     const cart = await Cart.findOne({ userId });
     if (!cart) {
@@ -22,10 +20,11 @@ router.get('/cart', async (req, res) => {
 });
 
 
-router.put('/cart', async (req, res) => {
+router.put('/cart', authMiddleware, async (req, res) => {
   try {
-    const { userId, name, price, image, quantity } = req.body;
-    if (!userId || !name || quantity < 1) {
+    const userId = req.user.id;
+    const { name, price, image, quantity } = req.body;
+    if (!name || quantity < 1) {
       return res.status(400).json({ success: false, message: 'Invalid data' });
     }
 
@@ -51,14 +50,10 @@ router.put('/cart', async (req, res) => {
 });
 
 
-router.delete('/cart/:name', async (req, res) => {
+router.delete('/cart/:name', authMiddleware, async (req, res) => {
   try {
     const { name } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ success: false, message: 'userId is required' });
-    }
+    const userId = req.user.id;
 
     // Find the user's cart
     let cart = await Cart.findOne({ userId });
@@ -79,13 +74,9 @@ router.delete('/cart/:name', async (req, res) => {
 });
 
 
-router.delete('/cart', async (req, res) => {
+router.delete('/cart', authMiddleware, async (req, res) => {
   try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ success: false, message: 'userId is required' });
-    }
+    const userId = req.user.id;
 
     // Find and delete the user's cart
     await Cart.deleteOne({ userId });
