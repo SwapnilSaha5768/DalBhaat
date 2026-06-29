@@ -76,6 +76,18 @@ export const loginUser = async (email, password) => {
   }
 };
 
+export const googleLogin = async (token) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/users/google-login`, {
+      token,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error in googleLogin API:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const logoutUser = async () => {
   try {
     await axios.post(`${API_BASE_URL}/users/logout`);
@@ -107,12 +119,22 @@ export const forgotPassword = async (email) => {
   }
 };
 
-export const resetPassword = async (token, password) => {
+export const resetPassword = async (email, otp, password) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/users/reset-password/${token}`, { password });
+    const response = await axios.post(`${API_BASE_URL}/users/reset-password`, { email, otp, password });
     return response.data;
   } catch (error) {
     console.error('Reset password error:', error);
+    throw error;
+  }
+};
+
+export const sendContactMessage = async (contactData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/users/contact`, contactData);
+    return response.data;
+  } catch (error) {
+    console.error('Send contact message error:', error);
     throw error;
   }
 };

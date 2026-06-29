@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { sendContactMessage } from '../../services/api';
 
 const contactSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -24,10 +25,14 @@ const Contact = () => {
     });
 
     const onSubmit = async (data) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        showToast('Message sent successfully! We will get back to you soon.', 'success');
-        reset();
+        try {
+            const response = await sendContactMessage(data);
+            showToast(response.message || 'Message sent successfully! We will get back to you soon.', 'success');
+            reset();
+        } catch (err) {
+            console.error('Contact form submission error:', err);
+            showToast(err.response?.data?.message || 'Failed to send message. Please try again.', 'error');
+        }
     };
 
     return (
@@ -61,7 +66,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-sm text-white/90">Email</h3>
-                                    <p className="text-white/70 text-sm mt-1">admin@support.com</p>
+                                    <p className="text-white/70 text-sm mt-1">swapnilsaha99@gmail.com</p>
                                 </div>
                             </div>
 

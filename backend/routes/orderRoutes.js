@@ -1,16 +1,14 @@
 const express = require('express');
 const Order = require('../models/Order');
 const authMiddleware = require('../middleware/authMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 const router = express.Router();
 
-// Force redeploy check
-
+// Create a new order
 router.post('/create', authMiddleware, async (req, res) => {
   try {
     const { name, phone, address, deliveryOption, paymentMethod, transactionId, orderSummary, totalAmount } = req.body;
     const userId = req.user.id;
-
-    // console.log('Creating order. userId:', userId); // Debug log
 
     if (!name || !phone || !address || !deliveryOption || !paymentMethod || !orderSummary || !totalAmount) {
       return res.status(400).json({ error: 'All required fields must be provided.' });
@@ -25,11 +23,10 @@ router.post('/create', authMiddleware, async (req, res) => {
       transactionId: paymentMethod === 'bkash' ? transactionId : null,
       orderSummary,
       totalAmount,
-      userId, // Save userId
+      userId,
     });
 
     const savedOrder = await newOrder.save();
-    // console.log('Order saved:', savedOrder._id); // Debug log
     res.status(201).json({ message: 'Order placed successfully!', orderId: savedOrder._id });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -41,7 +38,6 @@ router.post('/create', authMiddleware, async (req, res) => {
 router.get('/my-orders', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    // console.log('Fetching orders for authenticated user:', userId);
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
@@ -50,13 +46,14 @@ router.get('/my-orders', authMiddleware, async (req, res) => {
   }
 });
 
-// Get orders by User ID (Admin or specific use case)
-router.get('/user/:userId', async (req, res) => {
+// Get orders by User ID (Owner or Admin)
+router.get('/user/:userId', authMiddleware, async (req, res) => {
   try {
     const userId = req.params.userId;
-    // console.log('Fetching orders for userId:', userId); // Debug log
+    if (req.user.id !== userId && !req.user.isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-    // console.log('Found orders:', orders.length); // Debug log
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -64,10 +61,10 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-
-router.get('/all', async (req, res) => {
+// Get all orders (Admin only)
+router.get('/all', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 }); // Sort by most recent orders
+    const orders = await Order.find().sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -75,7 +72,8 @@ router.get('/all', async (req, res) => {
   }
 });
 
-router.put('/:orderId/status', async (req, res) => {
+// Update order status (Admin only)
+router.put('/:orderId/status', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
     const orderId = req.params.orderId;
@@ -97,7 +95,8 @@ router.put('/:orderId/status', async (req, res) => {
   }
 });
 
-router.put('/:orderId/edit', async (req, res) => {
+// Edit order details (Admin only)
+router.put('/:orderId/edit', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const updatedOrder = req.body;
@@ -115,7 +114,8 @@ router.put('/:orderId/edit', async (req, res) => {
   }
 });
 
-router.delete('/:orderId', async (req, res) => {
+// Delete order (Admin only)
+router.delete('/:orderId', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
@@ -132,13 +132,18 @@ router.delete('/:orderId', async (req, res) => {
   }
 });
 
-router.get('/:orderId', async (req, res) => {
+// Get single order details (Owner or Admin)
+router.get('/:orderId', authMiddleware, async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const order = await Order.findById(orderId);
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.userId && order.userId.toString() !== req.user.id && !req.user.isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     res.status(200).json(order);
@@ -148,14 +153,18 @@ router.get('/:orderId', async (req, res) => {
   }
 });
 
-// Cancel order and restore stock
-router.post('/cancel/:orderId', async (req, res) => {
+// Cancel order and restore stock (Owner or Admin)
+router.post('/cancel/:orderId', authMiddleware, async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const order = await Order.findById(orderId);
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.userId && order.userId.toString() !== req.user.id && !req.user.isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     // Restore stock for each product in the order
@@ -178,8 +187,8 @@ router.post('/cancel/:orderId', async (req, res) => {
   }
 });
 
-// Complete order and save to income
-router.post('/complete/:orderId', async (req, res) => {
+// Complete order and save to income (Admin only)
+router.post('/complete/:orderId', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const order = await Order.findById(orderId);

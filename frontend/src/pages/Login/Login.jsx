@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { loginUser } from '../../services/api';
+import { loginUser, googleLogin } from '../../services/api';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { GoogleLogin } from '@react-oauth/google';
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -30,13 +31,9 @@ function Login({ onLogin }) {
 
             if (response && response.success) {
                 showToast('Login successful', 'success');
-                // No localStorage for token as it's in cookie
-
-
                 if (onLogin) {
                     onLogin(response.isAdmin || false);
                 }
-
                 navigate('/');
             } else {
                 showToast(response.message || 'Login failed: Incorrect email or password', 'error');
@@ -50,19 +47,37 @@ function Login({ onLogin }) {
         }
     };
 
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const response = await googleLogin(credentialResponse.credential);
+            if (response && response.success) {
+                showToast('Google login successful', 'success');
+                if (onLogin) {
+                    onLogin(response.isAdmin || false);
+                }
+                navigate('/');
+            } else {
+                showToast(response.message || 'Google authentication failed', 'error');
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+            showToast(error.response?.data?.message || 'Google authentication failed', 'error');
+        }
+    };
+
     const handleRegisterRedirect = () => {
         setSlideOut(true);
         setTimeout(() => {
             navigate('/register', { state: { fromLogin: true } });
-        }, 600); // Match animation duration
+        }, 500);
     };
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-5">
-            <div className={`flex flex-col md:flex-row w-full max-w-[750px] min-h-[550px] md:h-[480px] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] overflow-hidden ${fromRegister ? '' : 'animate-[fadeIn_0.8s_ease-out]'}`}>
+            <div className="flex flex-col md:flex-row w-full max-w-[750px] min-h-[580px] md:h-[520px] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] overflow-hidden">
 
                 {/* Left Panel (Dark) */}
-                <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-panelSlideRight' : (fromRegister ? '' : 'animate-panelEnterLeft')} w-full md:w-1/2 order-2 md:order-1`}>
+                <div className={`flex-1 bg-gradient-to-br from-[#1a1a1a] to-[#2c3e50] text-white flex flex-col justify-center items-start p-10 relative ${slideOut ? 'animate-slide-out-right' : (fromRegister ? 'animate-slide-in-left' : 'animate-[fadeIn_0.6s_ease-out]')} w-full md:w-1/2 order-2 md:order-1`}>
                     <h2 className="text-[2.2rem] font-bold mb-4 text-white/80 leading-[1.2]">Welcome Back</h2>
                     <p className="text-[0.95rem] leading-[1.5] text-white/80 mb-[30px]">
                         Sign in to access our store, track your orders, and continue your shopping journey.
@@ -79,38 +94,55 @@ function Login({ onLogin }) {
                 </div>
 
                 {/* Right Panel (Light) */}
-                <div className={`flex-1 bg-white flex flex-col justify-center p-10 ${slideOut ? 'animate-panelSlideLeft' : (fromRegister ? '' : 'animate-panelEnterRight')} w-full md:w-1/2 order-1 md:order-2`}>
-                    <h2 className="text-[2rem] font-bold text-[#333] mb-[30px]">Sign In</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="font-semibold text-[#555] text-[0.9rem]">Email Address</label>
+                <div className={`flex-1 bg-white flex flex-col justify-center p-8 ${slideOut ? 'animate-slide-out-left' : (fromRegister ? 'animate-slide-in-right' : 'animate-[fadeIn_0.6s_ease-out]')} w-full md:w-1/2 order-1 md:order-2`}>
+                    <h2 className="text-[1.8rem] font-bold text-[#333] mb-[20px]">Sign In</h2>
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <label className="font-semibold text-[#555] text-[0.85rem]">Email Address</label>
                             <input
                                 type="email"
                                 placeholder="Enter your email"
                                 {...register('email')}
-                                className={`w-full p-3 border rounded-lg text-[0.95rem] text-[#333] bg-white transition-all duration-300 focus:outline-none placeholder-[#aaa] ${errors.email ? 'border-red-500 focus:shadow-[0_0_0_4px_rgba(255,0,0,0.1)]' : 'border-[#e1e1e1] focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)]'}`}
+                                className={`w-full p-2.5 border rounded-lg text-[0.9rem] text-[#333] bg-white transition-all duration-300 focus:outline-none placeholder-[#aaa] ${errors.email ? 'border-red-500 focus:shadow-[0_0_0_4px_rgba(255,0,0,0.1)]' : 'border-[#e1e1e1] focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)]'}`}
                             />
-                            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
+                            {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
                         </div>
-                        <div className="flex flex-col gap-1.5">
-                            <label className="font-semibold text-[#555] text-[0.9rem]">Password</label>
+                        <div className="flex flex-col gap-1">
+                            <label className="font-semibold text-[#555] text-[0.85rem]">Password</label>
                             <input
                                 type="password"
                                 placeholder="Enter your password"
                                 {...register('password')}
-                                className={`w-full p-3 border rounded-lg text-[0.95rem] text-[#333] bg-white transition-all duration-300 focus:outline-none placeholder-[#aaa] ${errors.password ? 'border-red-500 focus:shadow-[0_0_0_4px_rgba(255,0,0,0.1)]' : 'border-[#e1e1e1] focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)]'}`}
+                                className={`w-full p-2.5 border rounded-lg text-[0.9rem] text-[#333] bg-white transition-all duration-300 focus:outline-none placeholder-[#aaa] ${errors.password ? 'border-red-500 focus:shadow-[0_0_0_4px_rgba(255,0,0,0.1)]' : 'border-[#e1e1e1] focus:border-[#ff6b6b] focus:shadow-[0_0_0_4px_rgba(255,107,107,0.1)]'}`}
                             />
-                            {errors.password && <span className="text-red-500 text-sm">{errors.password.message}</span>}
-                            <Link to="/forgot-password" className="text-right text-[0.8rem] text-[#ff6b6b] cursor-pointer mt-[15px] hover:underline">Forgot password?</Link>
+                            {errors.password && <span className="text-red-500 text-xs">{errors.password.message}</span>}
+                            <Link to="/forgot-password" className="text-right text-[0.8rem] text-[#ff6b6b] cursor-pointer mt-1 hover:underline">Forgot password?</Link>
                         </div>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full p-3 border-none rounded-lg bg-[#ff6b6b] text-white text-[1rem] font-bold cursor-pointer transition-all duration-300 mt-[5px] hover:bg-[#ff5252] hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(255,107,107,0.3)] disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full p-2.5 border-none rounded-lg bg-[#ff6b6b] text-white text-[0.95rem] font-bold cursor-pointer transition-all duration-300 mt-1 hover:bg-[#ff5252] hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(255,107,107,0.3)] disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? 'Signing In...' : 'Sign In'}
                         </button>
                     </form>
+
+                    <div className="mt-4 flex flex-col items-center w-full">
+                        <div className="relative flex py-1 items-center w-full">
+                            <div className="flex-grow border-t border-gray-300"></div>
+                            <span className="flex-shrink mx-3 text-gray-400 text-[0.75rem] font-semibold uppercase">Or continue with</span>
+                            <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        <div className="mt-2 w-full flex justify-center">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => showToast('Google login failed', 'error')}
+                                shape="rectangular"
+                                theme="outline"
+                                size="large"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

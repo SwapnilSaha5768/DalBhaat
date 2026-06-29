@@ -15,3 +15,45 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@layer utilities {
+  @keyframes smoothSlideRight {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(100%, 0, 0); }
+  }
+
+  @keyframes smoothSlideLeft {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+  }
+
+  @keyframes smoothEnterLeft {
+    0% { transform: translate3d(-100%, 0, 0); opacity: 0.9; }
+    100% { transform: translate3d(0, 0, 0); opacity: 1; }
+  }
+
+  @keyframes smoothEnterRight {
+    0% { transform: translate3d(100%, 0, 0); opacity: 0.9; }
+    100% { transform: translate3d(0, 0, 0); opacity: 1; }
+  }
+
+  .animate-slide-out-right {
+    animation: smoothSlideRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: transform;
+  }
+
+  .animate-slide-out-left {
+    animation: smoothSlideLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: transform;
+  }
+
+  .animate-slide-in-left {
+    animation: smoothEnterLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: transform;
+  }
+
+  .animate-slide-in-right {
+    animation: smoothEnterRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: transform;
+  }
+}

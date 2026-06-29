@@ -1,9 +1,11 @@
 const express = require('express');
 const Income = require('../models/Income');
+const authMiddleware = require('../middleware/authMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 const router = express.Router();
 
-// Get total income from all completed orders
-router.get('/total', async (req, res) => {
+// Get total income (Admin only)
+router.get('/total', authMiddleware, adminMiddleware, async (req, res) => {
     try {
         const result = await Income.aggregate([
             {

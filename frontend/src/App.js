@@ -16,7 +16,6 @@ import OrderHistory from './pages/OrderHistory/OrderHistory';
 import ProfilePage from './pages/Profile/Profile';
 import ProtectedAdminRoute from './components/AdminPanel/ProtectedAdminRoute';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-import ResetPassword from './pages/Auth/ResetPassword';
 import { clearCart, getUserProfile, logoutUser } from './services/api';
 import { ToastProvider } from './context/ToastContext';
 
@@ -97,9 +96,8 @@ function AppContent() {
 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />} />
-          <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <RegistrationPage />} />
+          <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <RegistrationPage onLogin={handleLogin} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route
             path="/admin"
             element={

@@ -55,7 +55,6 @@ const insertDefaultProducts = async () => {
       ];
 
       await Product.insertMany(defaultProducts);
-    } else {
     }
   } catch (error) {
     console.error('Error inserting default products:', error);
@@ -93,20 +92,24 @@ if (require.main === module) {
 }
 async function createDefaultAdmin() {
   try {
-    const existingAdmin = await User.findOne({ email: 'admin@example.com' });
+    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL;
+    const adminPass = process.env.DEFAULT_ADMIN_PASS;
+    if (!adminEmail || !adminPass) {
+      return;
+    }
+
+    const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {
       const adminUser = new User({
         name: 'Admin',
-        email: 'admin@example.com',
-        password: 'admin123',
+        email: adminEmail,
+        password: adminPass,
         isAdmin: true,
       });
       await adminUser.save();
-      console.log('Default admin user created.');
-    } else {
-      console.log('Default admin user already exists.');
+      console.log('Environment-configured initial admin user created.');
     }
   } catch (error) {
-    console.error('Error creating default admin user:', error);
+    console.error('Error in createDefaultAdmin:', error);
   }
 }

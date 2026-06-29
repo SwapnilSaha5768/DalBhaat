@@ -16,8 +16,11 @@ const UserSchema = new mongoose.Schema({
     isDefault: { type: Boolean, default: false }
   }],
   avatar: { type: String, default: '' },
+  googleId: { type: String },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  resetOtp: { type: String },
+  resetOtpExpires: { type: Date },
 });
 
 
